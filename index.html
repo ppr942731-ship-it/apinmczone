@@ -49,6 +49,8 @@
             <button class="theme-btn" data-theme="neobrutaslim">Neo Brutaslim</button>
             <button class="theme-btn" data-theme="gelap">Gelap</button>
             <button class="theme-btn" data-theme="pink">Pink</button>
+            <button class="theme-btn" data-theme="coslo">coslo</button>
+            
         </div>
     </div>
 </aside>
@@ -86,7 +88,9 @@
                 <button class="filter-tab" data-filter="pack">Skin Pack</button>
                 <button class="filter-tab" data-filter="emote">Emote</button>
                 <button class="filter-tab" data-filter="jj">Skin JJ</button>
-                <button class="filter-tab" data-filter="couple">Skin Couple</button>
+                <button class="filter-tab" data-filter="jj">Skin JJ</button>
+                <button class="filter-tab" data-filter="template">Template Skin</button>
+                
             </div>
 
             <div class="cards-grid two-col" id="skinGrid">
@@ -239,5 +243,32 @@
 <div class="toast" id="toast"></div>
 
 <script src="script.js"></script>
+
+<!-- HALAMAN PREVIEW PENUH -->
+<div id="fullPreviewPage" class="full-preview-page" style="display: none;">
+    <div class="preview-header">
+        <button class="back-btn" onclick="closeFullPreview()">← Kembali</button>
+        <h2 id="fullPreviewTitle">Preview</h2>
+        <div class="preview-actions">
+            <button id="fullCopyLink" class="action-btn copy-btn">🔗 Salin Link</button>
+            <button id="fullShareWA" class="action-btn wa-btn">💬 WhatsApp</button>
+            <a id="fullDownload" class="action-btn download-btn" target="_blank">⬇️ Unduh</a>
+        </div>
+    </div>
+    <iframe id="previewIframe" class="preview-iframe" frameborder="0"></iframe>
+</div>
+
+<!-- MODAL PILIH GAMBAR COSLO -->
+<div id="cosloModal" class="coslo-modal" style="display: none;">
+    <div class="coslo-content">
+        <h3>🎨 Tema Coslo</h3>
+        <p>Pilih gambar dari perangkatmu untuk jadi latar belakang</p>
+        <input type="file" id="cosloImageInput" accept="image/*" class="file-input">
+        <div class="coslo-buttons">
+            <button onclick="closeCosloModal()" class="cancel-btn">Batal</button>
+            <button onclick="resetCoslo()" class="reset-btn">Hapus Latar</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
