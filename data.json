@@ -1,0 +1,37 @@
+{
+  "saluran": {
+    "judul": "Ikuti Saluran Kami",
+    "deskripsi": "Dapatkan update terbaru dan konten eksklusif, langsung dari sumbernya",
+    "daftar": [
+      { "nama": "Saluran Keminfo Skin", "link": "https://whatsapp.com/channel/0029VbCxBy9ADTOIAxNYA80w" },
+      { "nama": "Saluran ArpiMC Addon", "link": "https://whatsapp.com/channel/0029Vb77ZvbAojYrfMN7C322" }
+    ]
+  },
+  "sosmed": {
+    "judul": "Ikuti di Sosmed",
+    "deskripsi": "Kunjungi dan beri dukungan",
+    "daftar": [
+      { "nama": "TikTok", "link": "tautan-kamu" },
+      { "nama": "Instagram", "link": "tautan-kamu" }
+    ]
+  },
+  "grup": {
+    "judul": "Bergabung di Grup",
+    "deskripsi": "Bertemu teman-teman lain yang sama minatnya",
+    "daftar": [
+      { "nama": "Grup WhatsApp", "link": "tautan-kamu" },
+      { "nama": "Komunitas Discord", "link": "tautan-kamu" }
+    ]
+  },
+  "website": {
+    "judul": "Tentang ArpiMC Zone",
+    "deskripsi": "ArpiMC Zone adalah website kumpulan skin, addon, dan permainan Minecraft gratis yang dibuat dengan cinta. Semua tanpa biaya apapun.",
+    "domain": "arpimc.zone.id",
+    "sejak": "2026"
+  },
+  "dukungan": {
+    "judul": "Dukung Kami",
+    "deskripsi": "Karya gratis terus ada dengan dukungan kamu",
+    "tautan": "https://sociabuzz.com/arpi_mc/tribe"
+  }
+}
