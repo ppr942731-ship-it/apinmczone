@@ -1051,3 +1051,8 @@ img {
     color: #b71c1c;
     cursor: pointer;
 }
+/* Perbaiki nama tema Coslo */
+.theme-btn[data-theme="coslo"] {
+    font-size: 14px;
+    padding: 10px 12px;
+}
