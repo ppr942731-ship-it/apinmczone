@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     initSidebar();
     initThemes();
+    initCosloTheme();
     handleUrlSlug();
 });
 
@@ -100,38 +101,95 @@ function initNavigation() {
 // ---------- SIDEBAR & TEMA ----------
 function initSidebar() {
     document.getElementById('menuToggle').onclick = openSidebar;
-    document.getElementById('sidebarOverlay').onclick = closeSidebar;
-    document.getElementById('closeSidebar').onclick = closeSidebar;
+    const overlay = document.getElementById('sidebarOverlay');
+    if (overlay) overlay.onclick = closeSidebar;
+    const closeBtn = document.getElementById('closeSidebar');
+    if (closeBtn) closeBtn.onclick = closeSidebar;
 }
 
 function openSidebar() {
-    document.getElementById('sidebar').classList.add('active');
-    document.getElementById('sidebarOverlay').classList.add('active');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar) sidebar.classList.add('active');
+    if (overlay) overlay.classList.add('active');
 }
 
 function closeSidebar() {
-    document.getElementById('sidebar').classList.remove('active');
-    document.getElementById('sidebarOverlay').classList.remove('active');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar) sidebar.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
 }
 
 function initThemes() {
     const savedTheme = localStorage.getItem('armc-theme') || 'default';
     document.body.setAttribute('data-theme', savedTheme);
+    
     document.querySelectorAll('.theme-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-theme') === savedTheme);
         btn.addEventListener('click', () => {
             const theme = btn.getAttribute('data-theme');
+            if (theme === 'coslo') {
+                openCosloModal();
+                return;
+            }
             document.body.setAttribute('data-theme', theme);
             localStorage.setItem('armc-theme', theme);
             document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            localStorage.removeItem('cosloBg');
+            document.body.style.backgroundImage = '';
         });
     });
+}
+
+// ---------- TEMA COSLO — LATAR KUSTOM ----------
+function initCosloTheme() {
+    const savedBg = localStorage.getItem('cosloBg');
+    if (savedBg) {
+        document.body.style.backgroundImage = `url(${savedBg})`;
+    }
+    
+    const fileInput = document.getElementById('cosloImageInput');
+    if (fileInput) {
+        fileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const bgUrl = event.target.result;
+                    localStorage.setItem('cosloBg', bgUrl);
+                    document.body.style.backgroundImage = `url(${bgUrl})`;
+                    closeCosloModal();
+                    showToast('Latar berhasil diatur! ✅');
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
+}
+
+function openCosloModal() {
+    document.getElementById('cosloModal').style.display = 'flex';
+}
+
+function closeCosloModal() {
+    document.getElementById('cosloModal').style.display = 'none';
+    document.getElementById('cosloImageInput').value = '';
+}
+
+function resetCoslo() {
+    localStorage.removeItem('cosloBg');
+    document.body.style.backgroundImage = '';
+    closeCosloModal();
+    showToast('Latar dihapus!');
 }
 
 // ---------- RENDER SKIN ----------
 function renderSkins() {
     const grid = document.getElementById('skinGrid');
+    if (!grid) return;
+    
     let filtered = allSkins;
     if (currentSkinFilter !== 'semua') {
         filtered = allSkins.filter(s => 
@@ -163,7 +221,7 @@ function renderSkins() {
     grid.querySelectorAll('.card-btn.preview').forEach(btn => {
         btn.addEventListener('click', () => {
             const idx = parseInt(btn.getAttribute('data-realidx'));
-            openPreviewModal(allSkins[idx], 'skin');
+            openFullPreview(allSkins[idx], 'skin');
         });
     });
     grid.querySelectorAll('.card-btn.download').forEach(btn => {
@@ -182,10 +240,11 @@ function renderSkins() {
         });
     });
 }
-
-// ---------- RENDER ADDON ----------
+// ---------- RENDER ADDON — LANDSCAPE ----------
 function renderAddons() {
     const grid = document.getElementById('addonGrid');
+    if (!grid) return;
+    
     let filtered = allAddons;
     if (currentAddonFilter !== 'semua') {
         filtered = allAddons.filter(a => a.kategori === currentAddonFilter);
@@ -197,23 +256,24 @@ function renderAddons() {
     grid.innerHTML = filtered.map((addon, idx) => {
         const displayName = addon.tag || addon.nama || 'Tanpa Nama';
         const imgSrc = addon.gambar || addon.img || '';
+        const realIndex = allAddons.indexOf(addon);
         return `
-        <div class="card">
-            <img src="${imgSrc}" alt="${displayName}" class="card-image" loading="lazy">
-            <div class="card-body">
-                <h3 class="card-title">${displayName}</h3>
-                <div class="card-buttons">
-                    <button class="card-btn preview" data-addonidx="${idx}">Preview</button>
-                    <a href="${addon.file || addon.download || '#'}" target="_blank" class="card-btn download">Unduh</a>
+        <div class="addon-card">
+            <img src="${imgSrc}" alt="${displayName}" class="addon-card-img" loading="lazy">
+            <div class="addon-card-body">
+                <h3 class="addon-card-title">${displayName}</h3>
+                <div class="addon-card-buttons">
+                    <button class="addon-card-btn preview" data-realidx="${realIndex}">Preview</button>
+                    <a href="${addon.file || addon.download || '#'}" target="_blank" class="addon-card-btn download">Unduh</a>
                 </div>
             </div>
         </div>`;
     }).join('');
 
-    grid.querySelectorAll('.card-btn.preview').forEach(btn => {
+    grid.querySelectorAll('.addon-card-btn.preview').forEach(btn => {
         btn.addEventListener('click', () => {
-            const idx = parseInt(btn.getAttribute('data-addonidx'));
-            openPreviewModal(allAddons[idx], 'addon');
+            const idx = parseInt(btn.getAttribute('data-realidx'));
+            openFullPreview(allAddons[idx], 'addon');
         });
     });
 
@@ -227,9 +287,11 @@ function renderAddons() {
     });
 }
 
-// ---------- RENDER GAME ----------
+// ---------- RENDER GAME — BUKA DI IFRAME BUKAN TAB BARU ----------
 function renderGames() {
     const grid = document.getElementById('gameGrid');
+    if (!grid) return;
+    
     let filtered = allGames;
     if (currentGameFilter !== 'semua') {
         filtered = allGames.filter(g => g.tipe === currentGameFilter);
@@ -240,13 +302,21 @@ function renderGames() {
     }
     grid.innerHTML = filtered.map((game, idx) => {
         const displayName = game.nama || game.tag || 'Tanpa Nama';
+        const realIndex = allGames.indexOf(game);
         return `
         <div class="game-card">
             <h3 class="game-title">${displayName}</h3>
             <p class="game-desc">${game.deskripsi || ''}</p>
-            <a href="${game.link || '#'}" target="_blank" class="game-btn">Mainkan →</a>
+            <button class="game-btn" data-realidx="${realIndex}">Mainkan →</button>
         </div>`;
     }).join('');
+
+    grid.querySelectorAll('.game-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idx = parseInt(btn.getAttribute('data-realidx'));
+            openFullPreview(allGames[idx], 'game');
+        });
+    });
 
     document.querySelectorAll('#gameFilters .filter-tab').forEach(tab => {
         tab.addEventListener('click', () => {
@@ -258,12 +328,21 @@ function renderGames() {
     });
 }
 
-// ---------- RENDER INFO — ACCORDION ----------
+// ---------- RENDER INFO — DARI data.json ----------
 function renderInfo() {
-    if (!infoData.deskripsi) return;
-    document.getElementById('infoDesc').textContent = infoData.deskripsi;
+    if (!infoData || !infoData.deskripsi) {
+        console.log('Info data belum tersedia');
+        return;
+    }
+    
+    const infoDesc = document.getElementById('infoDesc');
+    if (infoDesc) infoDesc.textContent = infoData.deskripsi;
+    
     const container = document.getElementById('infoContent');
+    if (!container) return;
+    
     let html = '';
+    
     if (infoData.saluran && infoData.saluran.length > 0) {
         html += `
         <div class="accordion-item">
@@ -282,6 +361,7 @@ function renderInfo() {
             </div>
         </div>`;
     }
+    
     if (infoData.grup && infoData.grup.length > 0) {
         html += `
         <div class="accordion-item">
@@ -300,6 +380,7 @@ function renderInfo() {
             </div>
         </div>`;
     }
+    
     if (infoData.sosmed && infoData.sosmed.length > 0) {
         html += `
         <div class="accordion-item">
@@ -318,6 +399,7 @@ function renderInfo() {
             </div>
         </div>`;
     }
+    
     if (infoData.dukungan) {
         html += `
         <div class="accordion-item">
@@ -333,7 +415,9 @@ function renderInfo() {
             </div>
         </div>`;
     }
+    
     container.innerHTML = html;
+    
     container.querySelectorAll('.accordion-header').forEach(btn => {
         btn.addEventListener('click', () => {
             btn.parentElement.classList.toggle('open');
@@ -341,72 +425,48 @@ function renderInfo() {
     });
 }
 
-// ==========================================
-// ====  SAMPAI DI SINI BAGIAN 1  ====
-// ==========================================
-// ==========================================
-// ARPIMC ZONE — SCRIPT.JS BAGIAN 2
-// ==========================================
-
-// ---------- BUKA PREVIEW MODAL ----------
-function openPreviewModal(data, tipe = 'skin') {
+// ---------- BUKA PREVIEW PENUH — IFRAME ----------
+function openFullPreview(data, tipe) {
     currentData = { ...data, tipe };
     const displayName = data.tag || data.nama || 'Tanpa Nama';
-    const imgSrc = data.gambar || data.img || '';
+    const pageUrl = window.location.origin + window.location.pathname + '?' + (data.kategori || tipe) + '-id=' + (data.id || '');
     
-    document.getElementById('modalTitle').textContent = displayName;
-    document.getElementById('modalImage').src = imgSrc;
-    document.getElementById('modalDesc').textContent = data.deskripsi || '';
-    
-    let metaText = '';
-    if (data.tanggal) metaText += `📅 ${data.tanggal}`;
-    if (data.kategori) metaText += `  •  ${data.kategori}`;
-    document.getElementById('modalMeta').textContent = metaText;
-
-    // === FORMAT LINK: ?kategori-id=nomor ===
-    const kategori = data.kategori || tipe;
-    const id = data.id || '';
-    const pageUrl = window.location.origin + window.location.pathname + '?' + kategori + '-id=' + id;
-    
-    // Ubah URL di browser tanpa reload
+    // Update judul & URL
+    document.getElementById('fullPreviewTitle').textContent = displayName;
     history.pushState({}, '', pageUrl);
-
+    
+    // Set iframe src
+    const iframe = document.getElementById('previewIframe');
+    const downloadLink = document.getElementById('fullDownload');
+    
+    if (tipe === 'game') {
+        iframe.src = data.link || data.url || '';
+        downloadLink.style.display = 'none';
+    } else {
+        iframe.src = data.gambar || data.img || '';
+        downloadLink.href = data.file || data.download || '#';
+        downloadLink.style.display = 'inline-flex';
+    }
+    
+    // Tampilkan halaman preview
+    document.getElementById('fullPreviewPage').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
     // Salin Link
-    document.getElementById('modalCopyLink').onclick = () => {
+    document.getElementById('fullCopyLink').onclick = () => {
         navigator.clipboard.writeText(pageUrl).then(() => showToast('Tautan disalin! ✅'));
     };
-
+    
     // Bagikan WA
-    document.getElementById('modalShareWA').onclick = () => {
+    document.getElementById('fullShareWA').onclick = () => {
         const text = `${displayName}%0A%0ALihat di ArpiMC Zone:%0A${encodeURIComponent(pageUrl)}`;
         window.open(`https://wa.me/?text=${text}`, '_blank');
     };
-
-    // Dukungan
-    const supportLink = infoData.dukungan?.link || '#';
-    document.getElementById('modalSupport').href = supportLink;
-
-    // Tombol Unduh
-    const downloadArea = document.getElementById('modalDownloadArea');
-    const topDownload = document.getElementById('modalTopDownload');
-    
-    if (tipe === 'addon') {
-        topDownload.style.display = 'inline-block';
-        topDownload.onclick = () => window.open(data.file || data.download || '#', '_blank');
-        downloadArea.style.display = 'none';
-    } else {
-        topDownload.style.display = 'none';
-        downloadArea.style.display = 'block';
-    }
-
-    document.getElementById('previewModal').classList.add('active');
-    document.body.style.overflow = 'hidden';
 }
 
-function closePreviewModal() {
-    document.getElementById('previewModal').classList.remove('active');
+function closeFullPreview() {
+    document.getElementById('fullPreviewPage').style.display = 'none';
     document.body.style.overflow = '';
-    // Kembalikan URL ke aslinya
     history.pushState({}, '', window.location.pathname);
     currentData = null;
 }
@@ -416,7 +476,6 @@ function handleDownload(item) {
     const kategori = item.kategori || '';
     
     if (kategori === 'couple') {
-        // Tampilkan pilihan Couple
         document.getElementById('coupleModal').classList.add('active');
         document.body.style.overflow = 'hidden';
         
@@ -434,7 +493,6 @@ function handleDownload(item) {
     }
     
     if (kategori === 'jj') {
-        // Tampilkan pilihan Skin JJ
         document.getElementById('jjModal').classList.add('active');
         document.body.style.overflow = 'hidden';
         
@@ -456,7 +514,6 @@ function handleDownload(item) {
         return;
     }
     
-    // Unduh biasa
     const link = item.file || item.download || item.link || '#';
     window.open(link, '_blank');
     showToast('Mulai mengunduh...');
@@ -472,31 +529,26 @@ function closeJJModal() {
     document.body.style.overflow = '';
 }
 
-// ---------- BUKA LANGSUNG DARI URL ?kategori-id=nomor ----------
+// ---------- BUKA LANGSUNG DARI URL ----------
 function handleUrlSlug() {
     const params = new URLSearchParams(window.location.search);
     if (params.size === 0) return;
     
-    const query = window.location.search.slice(1); // hapus tanda ?
-    
-    // Format: cowok-id=1, cewek-id=2, dst
+    const query = window.location.search.slice(1);
     const match = query.match(/^([\w]+)-id=(\d+)$/);
     if (!match) return;
     
     const targetKategori = match[1];
     const targetId = parseInt(match[2]);
     
-    // Tunggu data dimuat dulu
     const checkData = setInterval(() => {
         let foundItem = null;
         let foundType = 'skin';
         
-        // Cari di Skin
         foundItem = allSkins.find(s => 
             String(s.kategori) === targetKategori && s.id === targetId
         );
         
-        // Cari di Addon
         if (!foundItem) {
             foundItem = allAddons.find(a => 
                 String(a.kategori) === targetKategori && a.id === targetId
@@ -504,7 +556,6 @@ function handleUrlSlug() {
             foundType = 'addon';
         }
         
-        // Cari di Game
         if (!foundItem) {
             foundItem = allGames.find(g => 
                 String(g.kategori) === targetKategori && g.id === targetId
@@ -514,7 +565,6 @@ function handleUrlSlug() {
         
         if (foundItem) {
             clearInterval(checkData);
-            // Pindah ke halaman yang benar
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             if (foundType === 'skin') {
                 document.querySelector('[data-page="skinPage"]').classList.add('active');
@@ -526,41 +576,23 @@ function handleUrlSlug() {
                 document.querySelector('[data-page="gamePage"]').classList.add('active');
                 document.getElementById('gamePage').classList.add('active');
             }
-            // Buka preview setelah halaman siap
-            setTimeout(() => openPreviewModal(foundItem, foundType), 100);
+            setTimeout(() => openFullPreview(foundItem, foundType), 100);
         }
     }, 100);
     
-    // Berhenti cek setelah 10 detik
     setTimeout(() => clearInterval(checkData), 10000);
-}
-
-// ---------- KEMBALI KE BERANDA ----------
-function goHome() {
-    history.pushState({}, '', window.location.pathname);
-    closePreviewModal();
 }
 
 // ---------- NOTIFIKASI TOAST ----------
 function showToast(pesan) {
     const toast = document.getElementById('toast');
+    if (!toast) return;
     toast.textContent = pesan;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
-// ---------- TUTUP MODAL KETIK KLIK LUAR ----------
-document.getElementById('previewModal').addEventListener('click', (e) => {
-    if (e.target.id === 'previewModal') closePreviewModal();
-});
-document.getElementById('coupleModal').addEventListener('click', (e) => {
-    if (e.target.id === 'coupleModal') closeCoupleModal();
-});
-document.getElementById('jjModal').addEventListener('click', (e) => {
-    if (e.target.id === 'jjModal') closeJJModal();
-});
-
-// Tangani tombol kembali browser
+// ---------- TOMBOL KEMBALI BROWSER ----------
 window.addEventListener('popstate', () => {
-    closePreviewModal();
+    closeFullPreview();
 });
