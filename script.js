@@ -1,591 +1,668 @@
-// ==========================================
-// ARPIMC ZONE — SCRIPT.JS VERSI LENGKAP
-// BAGIAN 1: INISIALISASI, NAVIGASI, COSLO
-// ==========================================
+// =============================================
+// ARPIMC ZONE — script.js
+// =============================================
 
-let allSkins = [];
-let allAddons = [];
-let allGames = [];
-let currentSkinSubpage = 'semua';
-let currentAddonSubpage = 'semua';
-let currentGameSubpage = 'semua';
-let currentPreviewData = null;
+let skinsData = [];
+let addonsData = [];
+let gamesData = [];
+let siteData = {};
 
+// === INISIALISASI ===
 document.addEventListener('DOMContentLoaded', () => {
-    initNavigation();
-    initSidebar();
-    initCoslo();
-    loadData();
-    handleUrlSlug();
+  loadSiteData();
+  loadSkins();
+  loadAddons();
+  loadGames();
+  setupNavigation();
+  setupSidebar();
+  setupThemePanel();
+  setupCosloBackground();
+  handleDirectLinks();
 });
 
-// ---------- NAVIGASI BAWAH ----------
-function initNavigation() {
-    const navLinks = document.querySelectorAll('.nav-link');
-    const pages = document.querySelectorAll('.page');
-    
-    navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            const targetPage = link.getAttribute('data-page');
-            
-            navLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-            
-            pages.forEach(p => p.classList.remove('active'));
-            document.getElementById(targetPage).classList.add('active');
-            
-            closePreviewPage();
-            window.scrollTo(0, 0);
-        });
-    });
+// === DATA SITUS (info, sosmed, dll) ===
+async function loadSiteData() {
+  try {
+    const res = await fetch('data.json');
+    siteData = await res.json();
+    renderInfoPage();
+  } catch (err) {
+    console.error('Gagal memuat data situs:', err);
+  }
 }
 
-// ---------- SIDEBAR & TEMA ----------
-function initSidebar() {
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
-    const sidebar = document.querySelector('.sidebar');
-    const closeSidebarBtn = document.getElementById('closeSidebar');
-    const themeButtons = document.querySelectorAll('.theme-option');
-    
-    function toggleSidebar(open) {
-        if (open) {
-            sidebar.classList.add('active');
-            sidebarOverlay.classList.add('active');
-        } else {
-            sidebar.classList.remove('active');
-            sidebarOverlay.classList.remove('active');
-        }
+function renderInfoPage() {
+  const descEl = document.getElementById('infoDesc');
+  const linksEl = document.getElementById('infoLinks');
+  
+  if (siteData.website?.deskripsi) {
+    descEl.textContent = siteData.website.deskripsi;
+  }
+  
+  let html = '';
+  
+  // Saluran
+  if (siteData.saluran?.daftar && siteData.saluran.daftar.length > 0) {
+    html += `<div class="info-card"><h3>📢 ${siteData.saluran.judul || 'Saluran'}</h3><p>${siteData.saluran.deskripsi || ''}</p><div class="info-grid">`;
+    siteData.saluran.daftar.forEach(item => {
+      html += `<a href="${item.link}" target="_blank" class="info-grid-btn">${item.nama}</a>`;
+    });
+    html += `</div></div>`;
+  }
+  
+  // Sosmed
+  if (siteData.sosmed?.daftar && siteData.sosmed.daftar.length > 0) {
+    html += `<div class="info-card"><h3>📱 ${siteData.sosmed.judul || 'Sosial Media'}</h3><p>${siteData.sosmed.deskripsi || ''}</p><div class="info-grid">`;
+    siteData.sosmed.daftar.forEach(item => {
+      html += `<a href="${item.link}" target="_blank" class="info-grid-btn">${item.nama}</a>`;
+    });
+    html += `</div></div>`;
+  }
+  
+  // Grup
+  if (siteData.grup?.daftar && siteData.grup.daftar.length > 0) {
+    html += `<div class="info-card"><h3>👥 ${siteData.grup.judul || 'Grup'}</h3><p>${siteData.grup.deskripsi || ''}</p><div class="info-grid">`;
+    siteData.grup.daftar.forEach(item => {
+      html += `<a href="${item.link}" target="_blank" class="info-grid-btn">${item.nama}</a>`;
+    });
+    html += `</div></div>`;
+  }
+  
+  // Dukungan
+  if (siteData.dukungan) {
+    html += `
+      <div class="info-card">
+        <h3>💜 ${siteData.dukungan.judul || 'Dukung Kami'}</h3>
+        <p>${siteData.dukungan.deskripsi || ''}</p>
+        <a href="${siteData.dukungan.tautan}" target="_blank" class="info-btn">Dukung Kami →</a>
+      </div>`;
+  }
+  
+  linksEl.innerHTML = html || '<p class="loading-text">Informasi belum tersedia</p>';
+}
+
+// === SIDEBAR BAHASA ===
+function setupSidebar() {
+  const toggle = document.getElementById('sidebarToggle');
+  const overlay = document.getElementById('sidebarOverlay');
+  const sidebar = document.getElementById('sidebar');
+  const closeBtn = document.getElementById('closeSidebar');
+  
+  toggle.addEventListener('click', () => {
+    overlay.classList.remove('hidden');
+    sidebar.classList.remove('hidden');
+  });
+  
+  const closeSidebar = () => {
+    overlay.classList.add('hidden');
+    sidebar.classList.add('hidden');
+  };
+  
+  overlay.addEventListener('click', closeSidebar);
+  closeBtn.addEventListener('click', closeSidebar);
+  
+  // Pilihan bahasa
+  const langOptions = document.querySelectorAll('.lang-option');
+  langOptions.forEach(opt => {
+    opt.addEventListener('click', () => {
+      langOptions.forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      const lang = opt.getAttribute('data-lang');
+      localStorage.setItem('arpimc-lang', lang);
+      // Nanti bisa tambah logika terjemahan di sini
+      closeSidebar();
+      alert(`Bahasa diubah ke: ${lang === 'id' ? 'Indonesia' : 'English'}`);
+    });
+  });
+  
+  // Muat bahasa yang tersimpan
+  const savedLang = localStorage.getItem('arpimc-lang') || 'id';
+  langOptions.forEach(opt => {
+    opt.classList.toggle('active', opt.getAttribute('data-lang') === savedLang);
+  });
+}
+
+// === NAVIGASI BAWAH ===
+function setupNavigation() {
+  const navItems = document.querySelectorAll('.nav-item');
+  const sections = document.querySelectorAll('.page-section');
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const targetPage = item.getAttribute('data-page');
+      navigateToPage(targetPage);
+    });
+  });
+}
+
+function navigateToPage(pageName) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-page="${pageName}"]`).classList.add('active');
+  
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`page-${pageName}`).classList.add('active');
+  
+  // Tutup modal jika terbuka
+  tutupSkinModal();
+  tutupAddonModal();
+  tutupGameModal();
+  
+  // Ubah judul halaman
+  const pageTitles = {
+    home: 'ArpiMC Zone',
+    skin: 'Koleksi Skin — ArpiMC Zone',
+    addon: 'Koleksi Addon — ArpiMC Zone',
+    game: 'Mini Game & Alat — ArpiMC Zone',
+    info: 'Tentang Kami — ArpiMC Zone'
+  };
+  document.title = pageTitles[pageName] || 'ArpiMC Zone';
+}
+
+// === BACA PARAMETER DARI URL ===
+function getUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  let result = { type: null, category: null, id: null, name: null };
+  
+  for (const [key, value] of params.entries()) {
+    const match = key.match(/^([a-z0-9-]+)-id$/);
+    if (match) {
+      result.category = match[1];
+      result.id = parseInt(value);
+      
+      if (['tic-tac-toe', 'minecraft-quiz-mob', 'minecraft-quiz-item'].includes(result.category)) {
+        result.type = 'game';
+        result.name = result.category;
+      } else if (['mutants', '3d-skin', 'bsl-shaders', 'ui-ancxly-v7'].includes(result.category)) {
+        result.type = 'addon';
+        result.name = result.category;
+      } else {
+        result.type = 'skin';
+        result.name = result.category;
+      }
+      break;
     }
-    
-    menuToggle.addEventListener('click', () => toggleSidebar(true));
-    closeSidebarBtn.addEventListener('click', () => toggleSidebar(false));
-    sidebarOverlay.addEventListener('click', () => toggleSidebar(false));
-    
-    // Muat tema tersimpan
-    const savedTheme = localStorage.getItem('arpimc_theme') || 'default';
-    document.body.setAttribute('data-theme', savedTheme);
-    updateThemeButtons(savedTheme);
-    
-    themeButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const theme = btn.getAttribute('data-theme');
-            document.body.setAttribute('data-theme', theme);
-            localStorage.setItem('arpimc_theme', theme);
-            updateThemeButtons(theme);
-            toggleSidebar(false);
-            
-            if (theme === 'coslo') {
-                loadCosloSettings();
-            } else {
-                disableCoslo();
-            }
-        });
-    });
+  }
+  
+  return result;
 }
 
-function updateThemeButtons(activeTheme) {
-    document.querySelectorAll('.theme-option').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.getAttribute('data-theme') === activeTheme) {
-            btn.classList.add('active');
-        }
-    });
+// === BUKA LANGSUNG DARI LINK ===
+function handleDirectLinks() {
+  const params = getUrlParams();
+  if (!params.id) return;
+  
+  if (params.type === 'skin') {
+    navigateToPage('skin');
+    setTimeout(() => bukaPreviewSkin(params.id), 200);
+  } else if (params.type === 'addon') {
+    navigateToPage('addon');
+    setTimeout(() => bukaPreviewAddon(params.id), 200);
+  } else if (params.type === 'game') {
+    navigateToPage('game');
+    setTimeout(() => bukaGameByName(params.name), 200);
+  }
 }
 
-// ---------- COSLO — Pengaturan Latar & Efek ----------
-function initCoslo() {
-    const cosloFile = document.getElementById('cosloFile');
-    const cosloContrast = document.getElementById('cosloContrast');
-    const cosloBlur = document.getElementById('cosloBlur');
-    const cosloBright = document.getElementById('cosloBright');
-    
-    cosloFile.addEventListener('change', handleCosloFileSelect);
-    cosloContrast.addEventListener('input', updateCosloPreview);
-    cosloBlur.addEventListener('input', updateCosloPreview);
-    cosloBright.addEventListener('input', updateCosloPreview);
-    
-    // Update nilai tampilan slider
-    cosloContrast.addEventListener('input', () => {
-        document.getElementById('contrastVal').textContent = cosloContrast.value;
+// === TEMA ===
+function setupThemePanel() {
+  const themeBtn = document.getElementById('themeToggle');
+  const panel = document.getElementById('themePanel');
+  const closeBtn = document.querySelector('.close-panel');
+  const choices = document.querySelectorAll('.theme-choice');
+  const cosloSettings = document.getElementById('cosloSettings');
+  
+  // Muat tema tersimpan
+  const savedTheme = localStorage.getItem('arpimc-theme') || 'default';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateActiveThemeButton(savedTheme);
+  toggleCosloBodyClass(savedTheme);
+  
+  themeBtn.addEventListener('click', () => {
+    panel.classList.remove('hidden');
+  });
+  
+  const closePanelFn = () => {
+    panel.classList.add('hidden');
+    cosloSettings.classList.add('hidden');
+  };
+  
+  closeBtn.addEventListener('click', closePanelFn);
+  panel.addEventListener('click', (e) => {
+    if (e.target === panel) closePanelFn();
+  });
+  
+  choices.forEach(choice => {
+    choice.addEventListener('click', () => {
+      const theme = choice.getAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('arpimc-theme', theme);
+      updateActiveThemeButton(theme);
+      toggleCosloBodyClass(theme);
+      
+      // Tampilkan pengaturan Coslo
+      if (theme === 'coslo') {
+        cosloSettings.classList.remove('hidden');
+      } else {
+        cosloSettings.classList.add('hidden');
+      }
+      
+      panel.classList.add('hidden');
     });
-    cosloBlur.addEventListener('input', () => {
-        document.getElementById('blurVal').textContent = cosloBlur.value;
-    });
-    cosloBright.addEventListener('input', () => {
-        document.getElementById('brightVal').textContent = cosloBright.value;
-    });
+  });
 }
 
-let cosloImageData = null;
+function updateActiveThemeButton(themeName) {
+  document.querySelectorAll('.theme-choice').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-theme') === themeName);
+  });
+}
 
-function handleCosloFileSelect(e) {
+function toggleCosloBodyClass(themeName) {
+  document.body.classList.toggle('coslo-active', themeName === 'coslo');
+}
+
+// === TEMA COSLO — Upload Gambar/Video Lokal ===
+function setupCosloBackground() {
+  const uploadInput = document.getElementById('cosloUpload');
+  const previewWrap = document.getElementById('cosloPreviewWrap');
+  const previewArea = document.getElementById('cosloPreview');
+  const blurSlider = document.getElementById('cosloBlur');
+  const contrastSlider = document.getElementById('cosloContrast');
+  const resetBtn = document.getElementById('resetCoslo');
+  
+  // Muat latar tersimpan
+  const savedBg = localStorage.getItem('coslo-bg');
+  const savedBlur = localStorage.getItem('coslo-blur');
+  const savedContrast = localStorage.getItem('coslo-contrast');
+  
+  if (savedBg) {
+    applyCosloBackground(savedBg, savedBlur || 0, savedContrast || 100);
+    showCosloPreview(savedBg, savedBlur, savedContrast);
+  }
+  if (savedBlur) blurSlider.value = savedBlur;
+  if (savedContrast) contrastSlider.value = savedContrast;
+  
+  // Upload file
+  uploadInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
     const reader = new FileReader();
-    reader.onload = function(event) {
-        cosloImageData = event.target.result;
-        const previewImg = document.getElementById('cosloPreviewImg');
-        const previewWrap = document.getElementById('cosloPreviewWrap');
-        previewImg.src = cosloImageData;
-        previewWrap.style.display = 'block';
+    reader.onload = (event) => {
+      const dataUrl = event.target.result;
+      localStorage.setItem('coslo-bg', dataUrl);
+      applyCosloBackground(dataUrl, blurSlider.value, contrastSlider.value);
+      showCosloPreview(dataUrl, blurSlider.value, contrastSlider.value);
     };
     reader.readAsDataURL(file);
-}
-
-function updateCosloPreview() {
-    const contrast = document.getElementById('cosloContrast').value;
-    const blur = document.getElementById('cosloBlur').value;
-    const bright = document.getElementById('cosloBright').value;
-    
-    let filterStr = `contrast(${contrast}%) brightness(${bright}%)`;
-    if (parseInt(blur) > 0) {
-        filterStr += ` blur(${blur}px)`;
-    }
-    
-    document.body.style.filter = filterStr;
-}
-
-function saveCosloSetting() {
-    if (!cosloImageData) {
-        showToast('Pilih gambar dulu ya!');
-        return;
-    }
-    
-    const contrast = document.getElementById('cosloContrast').value;
-    const blur = document.getElementById('cosloBlur').value;
-    const bright = document.getElementById('cosloBright').value;
-    
-    localStorage.setItem('coslo_bg', cosloImageData);
-    localStorage.setItem('coslo_contrast', contrast);
-    localStorage.setItem('coslo_blur', blur);
-    localStorage.setItem('coslo_bright', bright);
-    
-    applyCosloBackground(cosloImageData, contrast, blur, bright);
-    closeCosloModal();
-    showToast('Pengaturan Coslo tersimpan! ✅');
-}
-
-function loadCosloSettings() {
-    const bg = localStorage.getItem('coslo_bg');
-    const contrast = localStorage.getItem('coslo_contrast') || '100';
-    const blur = localStorage.getItem('coslo_blur') || '0';
-    const bright = localStorage.getItem('coslo_bright') || '100';
-    
-    if (bg) {
-        applyCosloBackground(bg, contrast, blur, bright);
-    }
-    
-    document.getElementById('cosloContrast').value = contrast;
-    document.getElementById('cosloBlur').value = blur;
-    document.getElementById('cosloBright').value = bright;
-    document.getElementById('contrastVal').textContent = contrast;
-    document.getElementById('blurVal').textContent = blur;
-    document.getElementById('brightVal').textContent = bright;
-}
-
-function applyCosloBackground(imgData, contrast, blur, bright) {
-    document.body.classList.add('coslo-active');
-    document.body.style.backgroundImage = `url(${imgData})`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
-    document.body.style.backgroundAttachment = 'fixed';
-    
-    let filterStr = `contrast(${contrast}%) brightness(${bright}%)`;
-    if (parseInt(blur) > 0) {
-        filterStr += ` blur(${blur}px)`;
-    }
-    document.body.style.filter = filterStr;
-}
-
-function disableCoslo() {
-    document.body.classList.remove('coslo-active');
+  });
+  
+  // Slider efek
+  const updateEffects = () => {
+    const bg = localStorage.getItem('coslo-bg');
+    if (!bg) return;
+    localStorage.setItem('coslo-blur', blurSlider.value);
+    localStorage.setItem('coslo-contrast', contrastSlider.value);
+    applyCosloBackground(bg, blurSlider.value, contrastSlider.value);
+  };
+  
+  blurSlider.addEventListener('input', updateEffects);
+  contrastSlider.addEventListener('input', updateEffects);
+  
+  // Reset
+  resetBtn.addEventListener('click', () => {
+    localStorage.removeItem('coslo-bg');
+    localStorage.removeItem('coslo-blur');
+    localStorage.removeItem('coslo-contrast');
     document.body.style.backgroundImage = '';
-    document.body.style.filter = '';
+    previewWrap.classList.add('hidden');
+    previewArea.innerHTML = '';
+    blurSlider.value = 0;
+    contrastSlider.value = 100;
+  });
 }
 
-function closeCosloModal() {
-    document.getElementById('cosloModal').style.display = 'none';
+function applyCosloBackground(dataUrl, blurPx, contrastPct) {
+  document.body.style.backgroundImage = `url(${dataUrl})`;
+  document.body.style.backgroundSize = 'cover';
+  document.body.style.backgroundPosition = 'center';
+  document.body.style.backgroundAttachment = 'fixed';
+  document.body.style.filter = `blur(${blurPx}px) contrast(${contrastPct}%)`;
+  document.body.style.transform = 'scale(1.02)'; // Hilangkan garis tepi akibat blur
 }
 
-function resetCoslo() {
-    localStorage.removeItem('coslo_bg');
-    localStorage.removeItem('coslo_contrast');
-    localStorage.removeItem('coslo_blur');
-    localStorage.removeItem('coslo_bright');
-    disableCoslo();
-    
-    document.getElementById('cosloPreviewWrap').style.display = 'none';
-    document.getElementById('cosloFile').value = '';
-    document.getElementById('cosloContrast').value = 100;
-    document.getElementById('cosloBlur').value = 0;
-    document.getElementById('cosloBright').value = 100;
-    document.getElementById('contrastVal').textContent = '100';
-    document.getElementById('blurVal').textContent = '0';
-    document.getElementById('brightVal').textContent = '100';
-    cosloImageData = null;
-    
-    showToast('Coslo direset! ✅');
+function showCosloPreview(dataUrl, blurPx, contrastPct) {
+  const previewWrap = document.getElementById('cosloPreviewWrap');
+  const previewArea = document.getElementById('cosloPreview');
+  
+  previewWrap.classList.remove('hidden');
+  previewArea.innerHTML = '';
+  
+  const isVideo = dataUrl.startsWith('data:video');
+  const el = isVideo ? document.createElement('video') : document.createElement('img');
+  
+  el.src = dataUrl;
+  if (isVideo) el.muted = true;
+  if (isVideo) el.loop = true;
+  if (isVideo) el.playsInline = true;
+  
+  previewArea.appendChild(el);
 }
 
-function openCosloModal() {
-    document.getElementById('cosloModal').style.display = 'flex';
-    loadCosloSettings();
+function tutupThemePanel() {
+  document.getElementById('themePanel').classList.add('hidden');
 }
 
-// ==========================================
-// ########## BATAS — BAGIAN 1 SELESAI ##########
-// ==========================================
-// ==========================================
-// ARPIMC ZONE — SCRIPT.JS VERSI LENGKAP
-// BAGIAN 2: MUAT DATA, RENDER, PREVIEW, SLUG
-// ==========================================
+// === MUAT DATA SKIN ===
+async function loadSkins() {
+  try {
+    const res = await fetch('skins.json');
+    skinsData = await res.json();
+    document.getElementById('totalSkins').textContent = skinsData.length;
+    renderSkins('all');
+    setupSkinFilters();
+  } catch (err) {
+    console.error('Gagal memuat skin:', err);
+    document.getElementById('skinsGrid').innerHTML = 
+      '<p class="loading-text">❌ Gagal memuat data skin</p>';
+  }
+}
 
-// ---------- MUAT DATA DARI FILE JSON ----------
-async function loadData() {
+function setupSkinFilters() {
+  const tabs = document.querySelectorAll('#page-skin .filter-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderSkins(tab.getAttribute('data-filter'));
+    });
+  });
+}
+
+function renderSkins(category) {
+  const container = document.getElementById('skinsGrid');
+  let filtered = category === 'all' ? skinsData : skinsData.filter(s => s.kategori === category);
+  
+  if (filtered.length === 0) {
+    container.innerHTML = '<p class="loading-text">Belum ada skin di kategori ini</p>';
+    return;
+  }
+  
+  container.innerHTML = filtered.map(skin => `
+    <div class="skin-card">
+      <div class="card-img-wrap" onclick="bukaPreviewSkin(${skin.id})">
+        <img src="${skin.gambar}" alt="${skin.tag}" loading="lazy">
+      </div>
+      <div class="card-body">
+        <p class="card-name">${skin.tag}</p>
+        <div class="card-buttons">
+          <button class="card-btn preview" onclick="bukaPreviewSkin(${skin.id})">Preview</button>
+          <a href="${skin.link_download}" target="_blank" class="card-btn download">Unduh</a>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// === PREVIEW SKIN ===
+function bukaPreviewSkin(id) {
+  const skin = skinsData.find(s => s.id === id);
+  if (!skin) return;
+  
+  const modal = document.getElementById('skinModal');
+  const baseUrl = window.location.origin + window.location.pathname;
+  const shareSlug = `${skin.kategori}-id=${skin.id}`;
+  const shareUrl = `${baseUrl}?${shareSlug}`;
+  
+  updateMetaShare(skin.gambar, skin.tag, shareUrl);
+  
+  document.getElementById('skinModalTitle').textContent = skin.tag;
+  document.getElementById('skinModalImage').src = skin.gambar;
+  document.getElementById('skinModalInfo').innerHTML = `
+    ${skin.deskripsi || 'Credit: Pemilik asli'}<br>
+    📅 ${skin.tanggal_upload || 'Tanggal tidak diketahui'}
+  `;
+  document.getElementById('skinModalDownloadTop').href = skin.link_download;
+  document.getElementById('skinModalDownload').href = skin.link_download;
+  
+  document.getElementById('skinModalCopy').onclick = async () => {
     try {
-        const [skinsRes, addonsRes, gamesRes, infoRes] = await Promise.all([
-            fetch('skins.json'),
-            fetch('addons.json'),
-            fetch('games.json'),
-            fetch('data.json')
-        ]);
-
-        allSkins = await skinsRes.json();
-        allAddons = await addonsRes.json();
-        allGames = await gamesRes.json();
-        const infoData = await infoRes.json();
-
-        document.getElementById('skinCount').textContent = allSkins.length;
-        renderSkins();
-        renderAddons();
-        renderGames();
-        renderInfo(infoData);
-        setupFilters();
-        
-    } catch (err) {
-        console.error('Gagal memuat data:', err);
-        showToast('Gagal memuat data, cek koneksi kamu');
-    }
+      await navigator.clipboard.writeText(`${skin.tag}\n${shareUrl}`);
+      alert('✅ Link disalin!');
+    } catch { alert('❌ Gagal menyalin'); }
+  };
+  
+  document.getElementById('skinModalShareWA').onclick = () => {
+    const text = encodeURIComponent(`${skin.tag}\n${shareUrl}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  };
+  
+  history.replaceState({ skinId: id }, '', `?${shareSlug}`);
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
 }
 
-// ---------- SETUP FILTER ----------
-function setupFilters() {
-    // Filter Skin
-    document.getElementById('skinFilters').addEventListener('click', e => {
-        if (e.target.classList.contains('tab-btn')) {
-            document.querySelectorAll('#skinFilters .tab-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            currentSkinSubpage = e.target.getAttribute('data-filter');
-            renderSkins();
-        }
-    });
-
-    // Filter Addon
-    document.getElementById('addonFilters').addEventListener('click', e => {
-        if (e.target.classList.contains('tab-btn')) {
-            document.querySelectorAll('#addonFilters .tab-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            currentAddonSubpage = e.target.getAttribute('data-filter');
-            renderAddons();
-        }
-    });
-
-    // Filter Game
-    document.getElementById('gameFilters').addEventListener('click', e => {
-        if (e.target.classList.contains('tab-btn')) {
-            document.querySelectorAll('#gameFilters .tab-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            currentGameSubpage = e.target.getAttribute('data-filter');
-            renderGames();
-        }
-    });
-}
-
-// ---------- RENDER SKIN ----------
-function renderSkins() {
-    const grid = document.getElementById('skinGrid');
-    let filtered = allSkins;
-
-    if (currentSkinSubpage !== 'semua') {
-        filtered = allSkins.filter(s => s.jenis === currentSkinSubpage);
-    }
-
-    if (!filtered.length) {
-        grid.innerHTML = '<div class="empty-state"><p>Belum ada skin di kategori ini</p></div>';
-        return;
-    }
-
-    grid.innerHTML = filtered.map(skin => `
-        <div class="card">
-            <img src="${skin.img}" alt="${skin.nama}" class="card-img" loading="lazy">
-            <div class="card-body">
-                <h3 class="card-title">${skin.nama}</h3>
-                <div class="card-buttons">
-                    <button class="card-btn preview" onclick="openSkinPreview('${skin.img}', '${skin.nama}', '${skin.deskripsi || ''}', '${skin.id}', '${skin.slug || ''}')">Preview</button>
-                    <a href="${skin.file}" target="_blank" class="card-btn download">Unduh</a>
-                </div>
-            </div>
-        </div>
-    `).join('');
-}
-
-// ---------- RENDER ADDON ----------
-function renderAddons() {
-    const list = document.getElementById('addonGrid');
-    let filtered = allAddons;
-
-    if (currentAddonSubpage !== 'semua') {
-        filtered = allAddons.filter(a => a.kategori === currentAddonSubpage);
-    }
-
-    if (!filtered.length) {
-        list.innerHTML = '<div class="empty-state"><p>Belum ada addon di kategori ini</p></div>';
-        return;
-    }
-
-    list.innerHTML = filtered.map(addon => `
-        <div class="addon-card">
-            <img src="${addon.img}" alt="${addon.nama}" class="addon-img" loading="lazy">
-            <div class="addon-body">
-                <div>
-                    <h3 class="addon-title">${addon.nama}</h3>
-                    <p class="addon-desc">${addon.deskripsi || ''}</p>
-                </div>
-                <div class="addon-buttons">
-                    <button class="addon-btn preview" onclick="openAddonPreview('${addon.img}', '${addon.nama}', '${addon.deskripsi || ''}', '${addon.id}', '${addon.slug || ''}')">Preview</button>
-                    <a href="${addon.file}" target="_blank" class="addon-btn download">Unduh</a>
-                </div>
-            </div>
-        </div>
-    `).join('');
-}
-
-// ---------- RENDER GAME ----------
-function renderGames() {
-    const grid = document.getElementById('gameGrid');
-    let filtered = allGames;
-
-    if (currentGameSubpage !== 'semua') {
-        filtered = allGames.filter(g => g.tipe === currentGameSubpage);
-    }
-
-    if (!filtered.length) {
-        grid.innerHTML = '<div class="empty-state"><p>Belum ada game di kategori ini</p></div>';
-        return;
-    }
-
-    grid.innerHTML = filtered.map(game => `
-        <div class="card">
-            <div class="card-body" style="aspect-ratio: 4/3; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 20px; background: var(--secondary);">
-                <h3 class="card-title" style="font-size: 16px; margin-bottom: 8px;">${game.nama}</h3>
-                <p style="font-size: 12px; color: var(--text-light);">${game.deskripsi || ''}</p>
-            </div>
-            <div class="card-body">
-                <button class="card-btn download" style="width: 100%;" onclick="openGamePreview('${game.link}', '${game.nama}', '${game.id}', '${game.slug || ''}')">▶ Mainkan</button>
-            </div>
-        </div>
-    `).join('');
-}
-
-// ---------- RENDER INFO ----------
-function renderInfo(data) {
-    document.getElementById('infoDesc').textContent = data.deskripsi || '';
-    const container = document.getElementById('infoContent');
-    
-    let html = '';
-    data.sections.forEach(sec => {
-        html += `
-            <div class="accordion-item">
-                <button class="accordion-header" onclick="toggleAccordion(this)">
-                    <span>${sec.judul}</span>
-                    <span class="accordion-icon">▼</span>
-                </button>
-                <div class="accordion-content">
-                    <div class="accordion-inner">
-                        ${sec.item.map(item => `
-                            <div class="info-item">
-                                <span class="info-name">${item.nama}</span>
-                                <a href="${item.link}" target="_blank" class="info-link">Buka →</a>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-    container.innerHTML = html;
-}
-
-function toggleAccordion(btn) {
-    const item = btn.parentElement;
-    item.classList.toggle('open');
-}
-
-// ---------- HALAMAN PREVIEW — SKIN ----------
-function openSkinPreview(img, nama, desc, id, slug) {
-    currentPreviewData = { type: 'skin', img, nama, desc, id, slug };
-    showPreviewPage('skin', img, nama, desc, id, slug);
-}
-
-// ---------- HALAMAN PREVIEW — ADDON ----------
-function openAddonPreview(img, nama, desc, id, slug) {
-    currentPreviewData = { type: 'addon', img, nama, desc, id, slug };
-    showPreviewPage('addon', img, nama, desc, id, slug);
-}
-
-// ---------- HALAMAN PREVIEW — GAME ----------
-function openGamePreview(link, nama, id, slug) {
-    currentPreviewData = { type: 'game', link, nama, id, slug };
-    showPreviewPage('game', link, nama, '', id, slug);
-}
-
-// ---------- TAMPILKAN HALAMAN PREVIEW ----------
-function showPreviewPage(tipe, media, nama, desc, id, slug) {
-    const previewPage = document.getElementById('previewPage');
-    const previewTopTitle = document.getElementById('previewPageTitle');
-    const previewMedia = document.getElementById('previewMedia');
-    const previewImg = document.getElementById('previewMainImg');
-    const previewFrame = document.getElementById('previewGameFrame');
-    const previewInfoBlock = document.getElementById('previewInfoBlock');
-    const previewName = document.getElementById('previewName');
-    const previewDescText = document.getElementById('previewDescText');
-    const copyLinkBtn = document.getElementById('copyLinkBtn');
-    const shareWABtn = document.getElementById('shareWABtn');
-    const dlBtn = document.getElementById('dlBtn');
-
-    // Reset semua tampilan
-    previewMedia.style.display = 'none';
-    previewFrame.style.display = 'none';
-    previewInfoBlock.style.display = 'none';
-    dlBtn.style.display = 'none';
-
-    previewTopTitle.textContent = nama;
-
-    if (tipe === 'game') {
-        previewFrame.style.display = 'block';
-        previewFrame.src = media;
-        previewInfoBlock.style.display = 'block';
-        previewName.textContent = nama;
-        previewDescText.textContent = desc || '';
-    } else {
-        previewMedia.style.display = 'block';
-        previewImg.src = media;
-        previewImg.alt = nama;
-        previewInfoBlock.style.display = 'block';
-        previewName.textContent = nama;
-        previewDescText.textContent = desc || '';
-    }
-
-    // Buat link share
-    let shareUrl = window.location.origin;
-    if (tipe === 'skin') shareUrl += `?${slug || `cowok-id=${id}`}`;
-    else if (tipe === 'addon') shareUrl += `?${slug || `addon-id=${id}`}`;
-    else if (tipe === 'game') shareUrl += `?${slug || `game-id=${id}`}`;
-
-    // Salin Link
-    copyLinkBtn.onclick = () => {
-        navigator.clipboard.writeText(shareUrl);
-        showToast('Link disalin! ✅');
-    };
-
-    // Share WhatsApp
-    shareWABtn.onclick = () => {
-        const text = encodeURIComponent(`${nama}\n${shareUrl}`);
-        window.open(`https://wa.me/?text=${text}`, '_blank');
-    };
-
-    // Unduh
-    if (currentPreviewData && currentPreviewData.file) {
-        dlBtn.href = currentPreviewData.file;
-        dlBtn.style.display = 'flex';
-    }
-
-    previewPage.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    history.pushState({ preview: true }, '', shareUrl);
-}
-
-// ---------- TUTUP PREVIEW ----------
-function closePreviewPage() {
-    document.getElementById('previewPage').style.display = 'none';
+function tutupSkinModal() {
+  const modal = document.getElementById('skinModal');
+  if (!modal.classList.contains('hidden')) {
+    modal.classList.add('hidden');
     document.body.style.overflow = '';
-    currentPreviewData = null;
-    history.back();
+    history.replaceState({}, '', window.location.pathname);
+  }
 }
 
-// Tutup preview saat tombol back browser
-window.addEventListener('popstate', () => {
-    if (document.getElementById('previewPage').style.display === 'flex') {
-        document.getElementById('previewPage').style.display = 'none';
-        document.body.style.overflow = '';
-        currentPreviewData = null;
-    }
+// === MUAT DATA ADDON ===
+async function loadAddons() {
+  try {
+    const res = await fetch('addons.json');
+    addonsData = await res.json();
+    renderAddons('all');
+    setupAddonFilters();
+  } catch (err) {
+    console.error('Gagal memuat addon:', err);
+    document.getElementById('addonsGrid').innerHTML =
+      '<p class="loading-text">❌ Gagal memuat data addon</p>';
+  }
+}
+
+function setupAddonFilters() {
+  const tabs = document.querySelectorAll('#page-addon .filter-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderAddons(tab.getAttribute('data-filter'));
+    });
+  });
+}
+
+function renderAddons(category) {
+  const container = document.getElementById('addonsGrid');
+  let filtered = category === 'all' ? addonsData : addonsData.filter(a => a.kategori === category);
+  
+  if (filtered.length === 0) {
+    container.innerHTML = '<p class="loading-text">Belum ada addon di kategori ini</p>';
+    return;
+  }
+  
+  container.innerHTML = filtered.map(addon => `
+    <div class="addon-card">
+      <div class="card-img-wrap" onclick="bukaPreviewAddon(${addon.id})">
+        <img src="${addon.gambar}" alt="${addon.nama}" loading="lazy">
+      </div>
+      <div class="card-body">
+        <p class="card-name">${addon.nama}</p>
+        <div class="card-buttons">
+          <button class="card-btn preview" onclick="bukaPreviewAddon(${addon.id})">Preview</button>
+          <a href="${addon.link_download}" target="_blank" class="card-btn download">Unduh</a>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// === PREVIEW ADDON ===
+function bukaPreviewAddon(id) {
+  const addon = addonsData.find(a => a.id === id);
+  if (!addon) return;
+  
+  const modal = document.getElementById('addonModal');
+  const baseUrl = window.location.origin + window.location.pathname;
+  const shareSlug = `${addon.nama.toLowerCase().replace(/\s+/g, '-')}-id=${addon.id}`;
+  const shareUrl = `${baseUrl}?${shareSlug}`;
+  
+  updateMetaShare(addon.gambar, addon.nama, shareUrl);
+  
+  document.getElementById('addonModalTitle').textContent = addon.nama;
+  document.getElementById('addonModalImage').src = addon.gambar;
+  document.getElementById('addonModalInfo').innerHTML = `
+    ${addon.deskripsi || ''}<br>
+    📦 Versi: ${addon.versi || 'Semua versi'} | 📂 ${addon.ukuran || '-'}<br>
+    📅 ${addon.tanggal_upload || 'Tanggal tidak diketahui'}
+  `;
+  document.getElementById('addonModalDownloadTop').href = addon.link_download;
+  document.getElementById('addonModalDownload').href = addon.link_download;
+  
+  document.getElementById('addonModalCopy').onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(`${addon.nama}\n${shareUrl}`);
+      alert('✅ Link disalin!');
+    } catch { alert('❌ Gagal menyalin'); }
+  };
+  
+  document.getElementById('addonModalShareWA').onclick = () => {
+    const text = encodeURIComponent(`${addon.nama}\n${shareUrl}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  };
+  
+  history.replaceState({ addonId: id }, '', `?${shareSlug}`);
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function tutupAddonModal() {
+  const modal = document.getElementById('addonModal');
+  if (!modal.classList.contains('hidden')) {
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+    history.replaceState({}, '', window.location.pathname);
+  }
+}
+
+// === MUAT DATA GAME ===
+async function loadGames() {
+  try {
+    const res = await fetch('games.json');
+    gamesData = await res.json();
+    renderGames('all');
+    setupGameFilters();
+  } catch (err) {
+    console.error('Gagal memuat game:', err);
+    document.getElementById('gamesGrid').innerHTML =
+      '<p class="loading-text">❌ Gagal memuat data game</p>';
+  }
+}
+
+function setupGameFilters() {
+  const tabs = document.querySelectorAll('#page-game .filter-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderGames(tab.getAttribute('data-filter'));
+    });
+  });
+}
+
+function renderGames(category) {
+  const container = document.getElementById('gamesGrid');
+  let filtered = category === 'all' ? gamesData : gamesData.filter(g => g.tipe === category);
+  
+  if (filtered.length === 0) {
+    container.innerHTML = '<p class="loading-text">Belum ada konten di kategori ini</p>';
+    return;
+  }
+  
+  container.innerHTML = filtered.map(game => `
+    <div class="game-card">
+      <h3 class="game-name">${game.nama}</h3>
+      <p class="game-desc">${game.deskripsi}</p>
+      <button class="card-btn download" onclick="bukaGame(${game.id})">Buka →</button>
+    </div>
+  `).join('');
+}
+
+// === BUKA GAME DENGAN IFRAME ===
+function bukaGame(id) {
+  const game = gamesData.find(g => g.id === id);
+  if (!game) return;
+  
+  const modal = document.getElementById('gameModal');
+  document.getElementById('gameModalTitle').textContent = game.nama;
+  document.getElementById('gameIframe').src = game.link;
+  document.getElementById('gameModalNewTab').href = game.link;
+  
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function bukaGameByName(nameSlug) {
+  const game = gamesData.find(g => 
+    g.nama.toLowerCase().replace(/\s+/g, '-') === nameSlug
+  );
+  if (game) bukaGame(game.id);
+}
+
+function tutupGameModal() {
+  const modal = document.getElementById('gameModal');
+  if (!modal.classList.contains('hidden')) {
+    modal.classList.add('hidden');
+    document.getElementById('gameIframe').src = '';
+    document.body.style.overflow = '';
+    history.replaceState({}, '', window.location.pathname);
+  }
+}
+
+// === UPDATE META SHARING ===
+function updateMetaShare(imageUrl, title, pageUrl) {
+  let metaImg = document.querySelector('meta[property="og:image"]');
+  let metaTitle = document.querySelector('meta[property="og:title"]');
+  let metaUrl = document.querySelector('meta[property="og:url"]');
+  
+  if (!metaImg) {
+    metaImg = document.createElement('meta');
+    metaImg.setAttribute('property', 'og:image');
+    document.head.appendChild(metaImg);
+  }
+  if (!metaTitle) {
+    metaTitle = document.createElement('meta');
+    metaTitle.setAttribute('property', 'og:title');
+    document.head.appendChild(metaTitle);
+  }
+  if (!metaUrl) {
+    metaUrl = document.createElement('meta');
+    metaUrl.setAttribute('property', 'og:url');
+    document.head.appendChild(metaUrl);
+  }
+  
+  metaImg.content = imageUrl;
+  metaTitle.content = title + ' — ArpiMC Zone';
+  metaUrl.content = pageUrl;
+}
+
+// === TUTUP MODAL DENGAN TOMBOL ESCAPE ===
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    tutupSkinModal();
+    tutupAddonModal();
+    tutupGameModal();
+    tutupThemePanel();
+  }
 });
 
-// ---------- BUKA LANGSUNG DARI URL SLUG ----------
-function handleUrlSlug() {
-    const params = new URLSearchParams(window.location.search);
-    
-    for (const [key, value] of params.entries()) {
-        // Format: ?cowok-id=1
-        const match = key.match(/^(.+)-id$/);
-        if (match) {
-            const jenis = match[1];
-            const id = parseInt(value);
-            
-            // Cari di Skin
-            const skin = allSkins.find(s => String(s.id) === String(id));
-            if (skin) {
-                setTimeout(() => {
-                    openSkinPreview(skin.img, skin.nama, skin.deskripsi || '', skin.id, `${jenis}-id=${id}`);
-                }, 300);
-                return;
-            }
-            
-            // Cari di Addon
-            const addon = allAddons.find(a => String(a.id) === String(id));
-            if (addon) {
-                setTimeout(() => {
-                    openAddonPreview(addon.img, addon.nama, addon.deskripsi || '', addon.id, `${jenis}-id=${id}`);
-                }, 300);
-                return;
-            }
-            
-            // Cari di Game
-            const game = allGames.find(g => String(g.id) === String(id));
-            if (game) {
-                setTimeout(() => {
-                    openGamePreview(game.link, game.nama, game.id, `${jenis}-id=${id}`);
-                }, 300);
-                return;
-            }
-        }
-    }
-}
+// === KLIK TOMBOL KEMBALI DI MODAL ===
+document.querySelector('#skinModal .back-btn')?.addEventListener('click', tutupSkinModal);
+document.querySelector('#addonModal .back-btn')?.addEventListener('click', tutupAddonModal);
+document.querySelector('#gameModal .back-btn')?.addEventListener('click', tutupGameModal);
 
-// ---------- MODAL PILIHAN UNDUH SKIN COUPLE ----------
-function closeCoupleModal() {
-    document.getElementById('coupleModal').style.display = 'none';
-}
-function closeJJModal() {
-    document.getElementById('jjModal').style.display = 'none';
-}
-
-// ---------- KE BERANDA ----------
-function goHome() {
-    document.querySelector('.nav-link[data-page="skinPage"]').click();
-}
-
-// ---------- NOTIFIKASI TOAST ----------
-function showToast(msg) {
-    const box = document.getElementById('toastBox');
-    box.textContent = msg;
-    box.classList.add('show');
-    setTimeout(() => box.classList.remove('show'), 2500);
-}
-
-// ==========================================
-// ########## AKHIR FILE ##########
-// ==========================================
+console.log('%c🚀 ArpiMC Zone siap digunakan!', 'color: #3b82f6; font-weight: bold; font-size: 14px;');
