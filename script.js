@@ -1,598 +1,591 @@
 // ==========================================
-// ARPIMC ZONE — SCRIPT.JS BAGIAN 1
+// ARPIMC ZONE — SCRIPT.JS VERSI LENGKAP
+// BAGIAN 1: INISIALISASI, NAVIGASI, COSLO
 // ==========================================
 
 let allSkins = [];
 let allAddons = [];
 let allGames = [];
-let infoData = {};
-let currentSkinFilter = 'semua';
-let currentAddonFilter = 'semua';
-let currentGameFilter = 'semua';
-let currentData = null;
+let currentSkinSubpage = 'semua';
+let currentAddonSubpage = 'semua';
+let currentGameSubpage = 'semua';
+let currentPreviewData = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadAllData();
     initNavigation();
     initSidebar();
-    initThemes();
-    initCosloTheme();
+    initCoslo();
+    loadData();
     handleUrlSlug();
 });
 
-// ---------- MUAT SEMUA DATA ----------
-async function loadAllData() {
-    try {
-        const resSkins = await fetch('skins.json');
-        allSkins = await resSkins.json();
-        
-        try {
-            const resEmote = await fetch('emote.json');
-            const emoteData = await resEmote.json();
-            emoteData.forEach((item, idx) => {
-                item.kategori = 'emote';
-                if (!item.id) item.id = idx + 1;
-                allSkins.push(item);
-            });
-        } catch (e) { console.log('emote.json dilewati'); }
-
-        try {
-            const resCouple = await fetch('couple.json');
-            const coupleData = await resCouple.json();
-            coupleData.forEach((item, idx) => {
-                item.kategori = 'couple';
-                if (!item.id) item.id = idx + 1;
-                allSkins.push(item);
-            });
-        } catch (e) { console.log('couple.json dilewati'); }
-
-        try {
-            const resJJ = await fetch('skinjj.json');
-            const jjData = await resJJ.json();
-            jjData.forEach((item, idx) => {
-                item.kategori = 'jj';
-                if (!item.id) item.id = idx + 1;
-                allSkins.push(item);
-            });
-        } catch (e) { console.log('skinjj.json dilewati'); }
-
-        document.getElementById('skinCount').textContent = allSkins.length;
-        renderSkins();
-    } catch (e) {
-        console.error('Gagal memuat skins.json', e);
-    }
-
-    try {
-        const resAddons = await fetch('addons.json');
-        allAddons = await resAddons.json();
-        renderAddons();
-    } catch (e) { console.error('Addons gagal', e); }
-
-    try {
-        const resGames = await fetch('games.json');
-        allGames = await resGames.json();
-        renderGames();
-    } catch (e) { console.error('Games gagal', e); }
-
-    try {
-        const resInfo = await fetch('data.json');
-        infoData = await resInfo.json();
-        renderInfo();
-    } catch (e) { console.error('Info gagal', e); }
-}
-
 // ---------- NAVIGASI BAWAH ----------
 function initNavigation() {
-    const navItems = document.querySelectorAll('.nav-item');
+    const navLinks = document.querySelectorAll('.nav-link');
     const pages = document.querySelectorAll('.page');
-    navItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const targetPage = item.getAttribute('data-page');
-            navItems.forEach(n => n.classList.remove('active'));
-            item.classList.add('active');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            const targetPage = link.getAttribute('data-page');
+            
+            navLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            
             pages.forEach(p => p.classList.remove('active'));
             document.getElementById(targetPage).classList.add('active');
-            closeSidebar();
-            window.scrollTo({ top: 0 });
+            
+            closePreviewPage();
+            window.scrollTo(0, 0);
         });
     });
 }
 
 // ---------- SIDEBAR & TEMA ----------
 function initSidebar() {
-    document.getElementById('menuToggle').onclick = openSidebar;
-    const overlay = document.getElementById('sidebarOverlay');
-    if (overlay) overlay.onclick = closeSidebar;
-    const closeBtn = document.getElementById('closeSidebar');
-    if (closeBtn) closeBtn.onclick = closeSidebar;
-}
-
-function openSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    if (sidebar) sidebar.classList.add('active');
-    if (overlay) overlay.classList.add('active');
-}
-
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    if (sidebar) sidebar.classList.remove('active');
-    if (overlay) overlay.classList.remove('active');
-}
-
-function initThemes() {
-    const savedTheme = localStorage.getItem('armc-theme') || 'default';
-    document.body.setAttribute('data-theme', savedTheme);
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const sidebar = document.querySelector('.sidebar');
+    const closeSidebarBtn = document.getElementById('closeSidebar');
+    const themeButtons = document.querySelectorAll('.theme-option');
     
-    document.querySelectorAll('.theme-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-theme') === savedTheme);
+    function toggleSidebar(open) {
+        if (open) {
+            sidebar.classList.add('active');
+            sidebarOverlay.classList.add('active');
+        } else {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        }
+    }
+    
+    menuToggle.addEventListener('click', () => toggleSidebar(true));
+    closeSidebarBtn.addEventListener('click', () => toggleSidebar(false));
+    sidebarOverlay.addEventListener('click', () => toggleSidebar(false));
+    
+    // Muat tema tersimpan
+    const savedTheme = localStorage.getItem('arpimc_theme') || 'default';
+    document.body.setAttribute('data-theme', savedTheme);
+    updateThemeButtons(savedTheme);
+    
+    themeButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             const theme = btn.getAttribute('data-theme');
-            if (theme === 'coslo') {
-                openCosloModal();
-                return;
-            }
             document.body.setAttribute('data-theme', theme);
-            localStorage.setItem('armc-theme', theme);
-            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            localStorage.removeItem('cosloBg');
-            document.body.style.backgroundImage = '';
+            localStorage.setItem('arpimc_theme', theme);
+            updateThemeButtons(theme);
+            toggleSidebar(false);
+            
+            if (theme === 'coslo') {
+                loadCosloSettings();
+            } else {
+                disableCoslo();
+            }
         });
     });
 }
 
-// ---------- TEMA COSLO — LATAR KUSTOM ----------
-function initCosloTheme() {
-    const savedBg = localStorage.getItem('cosloBg');
-    if (savedBg) {
-        document.body.style.backgroundImage = `url(${savedBg})`;
-    }
-    
-    const fileInput = document.getElementById('cosloImageInput');
-    if (fileInput) {
-        fileInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const bgUrl = event.target.result;
-                    localStorage.setItem('cosloBg', bgUrl);
-                    document.body.style.backgroundImage = `url(${bgUrl})`;
-                    closeCosloModal();
-                    showToast('Latar berhasil diatur! ✅');
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-    }
+function updateThemeButtons(activeTheme) {
+    document.querySelectorAll('.theme-option').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-theme') === activeTheme) {
+            btn.classList.add('active');
+        }
+    });
 }
 
-function openCosloModal() {
-    document.getElementById('cosloModal').style.display = 'flex';
+// ---------- COSLO — Pengaturan Latar & Efek ----------
+function initCoslo() {
+    const cosloFile = document.getElementById('cosloFile');
+    const cosloContrast = document.getElementById('cosloContrast');
+    const cosloBlur = document.getElementById('cosloBlur');
+    const cosloBright = document.getElementById('cosloBright');
+    
+    cosloFile.addEventListener('change', handleCosloFileSelect);
+    cosloContrast.addEventListener('input', updateCosloPreview);
+    cosloBlur.addEventListener('input', updateCosloPreview);
+    cosloBright.addEventListener('input', updateCosloPreview);
+    
+    // Update nilai tampilan slider
+    cosloContrast.addEventListener('input', () => {
+        document.getElementById('contrastVal').textContent = cosloContrast.value;
+    });
+    cosloBlur.addEventListener('input', () => {
+        document.getElementById('blurVal').textContent = cosloBlur.value;
+    });
+    cosloBright.addEventListener('input', () => {
+        document.getElementById('brightVal').textContent = cosloBright.value;
+    });
+}
+
+let cosloImageData = null;
+
+function handleCosloFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        cosloImageData = event.target.result;
+        const previewImg = document.getElementById('cosloPreviewImg');
+        const previewWrap = document.getElementById('cosloPreviewWrap');
+        previewImg.src = cosloImageData;
+        previewWrap.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+
+function updateCosloPreview() {
+    const contrast = document.getElementById('cosloContrast').value;
+    const blur = document.getElementById('cosloBlur').value;
+    const bright = document.getElementById('cosloBright').value;
+    
+    let filterStr = `contrast(${contrast}%) brightness(${bright}%)`;
+    if (parseInt(blur) > 0) {
+        filterStr += ` blur(${blur}px)`;
+    }
+    
+    document.body.style.filter = filterStr;
+}
+
+function saveCosloSetting() {
+    if (!cosloImageData) {
+        showToast('Pilih gambar dulu ya!');
+        return;
+    }
+    
+    const contrast = document.getElementById('cosloContrast').value;
+    const blur = document.getElementById('cosloBlur').value;
+    const bright = document.getElementById('cosloBright').value;
+    
+    localStorage.setItem('coslo_bg', cosloImageData);
+    localStorage.setItem('coslo_contrast', contrast);
+    localStorage.setItem('coslo_blur', blur);
+    localStorage.setItem('coslo_bright', bright);
+    
+    applyCosloBackground(cosloImageData, contrast, blur, bright);
+    closeCosloModal();
+    showToast('Pengaturan Coslo tersimpan! ✅');
+}
+
+function loadCosloSettings() {
+    const bg = localStorage.getItem('coslo_bg');
+    const contrast = localStorage.getItem('coslo_contrast') || '100';
+    const blur = localStorage.getItem('coslo_blur') || '0';
+    const bright = localStorage.getItem('coslo_bright') || '100';
+    
+    if (bg) {
+        applyCosloBackground(bg, contrast, blur, bright);
+    }
+    
+    document.getElementById('cosloContrast').value = contrast;
+    document.getElementById('cosloBlur').value = blur;
+    document.getElementById('cosloBright').value = bright;
+    document.getElementById('contrastVal').textContent = contrast;
+    document.getElementById('blurVal').textContent = blur;
+    document.getElementById('brightVal').textContent = bright;
+}
+
+function applyCosloBackground(imgData, contrast, blur, bright) {
+    document.body.classList.add('coslo-active');
+    document.body.style.backgroundImage = `url(${imgData})`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+    
+    let filterStr = `contrast(${contrast}%) brightness(${bright}%)`;
+    if (parseInt(blur) > 0) {
+        filterStr += ` blur(${blur}px)`;
+    }
+    document.body.style.filter = filterStr;
+}
+
+function disableCoslo() {
+    document.body.classList.remove('coslo-active');
+    document.body.style.backgroundImage = '';
+    document.body.style.filter = '';
 }
 
 function closeCosloModal() {
     document.getElementById('cosloModal').style.display = 'none';
-    document.getElementById('cosloImageInput').value = '';
 }
 
 function resetCoslo() {
-    localStorage.removeItem('cosloBg');
-    document.body.style.backgroundImage = '';
-    closeCosloModal();
-    showToast('Latar dihapus!');
+    localStorage.removeItem('coslo_bg');
+    localStorage.removeItem('coslo_contrast');
+    localStorage.removeItem('coslo_blur');
+    localStorage.removeItem('coslo_bright');
+    disableCoslo();
+    
+    document.getElementById('cosloPreviewWrap').style.display = 'none';
+    document.getElementById('cosloFile').value = '';
+    document.getElementById('cosloContrast').value = 100;
+    document.getElementById('cosloBlur').value = 0;
+    document.getElementById('cosloBright').value = 100;
+    document.getElementById('contrastVal').textContent = '100';
+    document.getElementById('blurVal').textContent = '0';
+    document.getElementById('brightVal').textContent = '100';
+    cosloImageData = null;
+    
+    showToast('Coslo direset! ✅');
+}
+
+function openCosloModal() {
+    document.getElementById('cosloModal').style.display = 'flex';
+    loadCosloSettings();
+}
+
+// ==========================================
+// ########## BATAS — BAGIAN 1 SELESAI ##########
+// ==========================================
+// ==========================================
+// ARPIMC ZONE — SCRIPT.JS VERSI LENGKAP
+// BAGIAN 2: MUAT DATA, RENDER, PREVIEW, SLUG
+// ==========================================
+
+// ---------- MUAT DATA DARI FILE JSON ----------
+async function loadData() {
+    try {
+        const [skinsRes, addonsRes, gamesRes, infoRes] = await Promise.all([
+            fetch('skins.json'),
+            fetch('addons.json'),
+            fetch('games.json'),
+            fetch('data.json')
+        ]);
+
+        allSkins = await skinsRes.json();
+        allAddons = await addonsRes.json();
+        allGames = await gamesRes.json();
+        const infoData = await infoRes.json();
+
+        document.getElementById('skinCount').textContent = allSkins.length;
+        renderSkins();
+        renderAddons();
+        renderGames();
+        renderInfo(infoData);
+        setupFilters();
+        
+    } catch (err) {
+        console.error('Gagal memuat data:', err);
+        showToast('Gagal memuat data, cek koneksi kamu');
+    }
+}
+
+// ---------- SETUP FILTER ----------
+function setupFilters() {
+    // Filter Skin
+    document.getElementById('skinFilters').addEventListener('click', e => {
+        if (e.target.classList.contains('tab-btn')) {
+            document.querySelectorAll('#skinFilters .tab-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            currentSkinSubpage = e.target.getAttribute('data-filter');
+            renderSkins();
+        }
+    });
+
+    // Filter Addon
+    document.getElementById('addonFilters').addEventListener('click', e => {
+        if (e.target.classList.contains('tab-btn')) {
+            document.querySelectorAll('#addonFilters .tab-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            currentAddonSubpage = e.target.getAttribute('data-filter');
+            renderAddons();
+        }
+    });
+
+    // Filter Game
+    document.getElementById('gameFilters').addEventListener('click', e => {
+        if (e.target.classList.contains('tab-btn')) {
+            document.querySelectorAll('#gameFilters .tab-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            currentGameSubpage = e.target.getAttribute('data-filter');
+            renderGames();
+        }
+    });
 }
 
 // ---------- RENDER SKIN ----------
 function renderSkins() {
     const grid = document.getElementById('skinGrid');
-    if (!grid) return;
-    
     let filtered = allSkins;
-    if (currentSkinFilter !== 'semua') {
-        filtered = allSkins.filter(s => 
-            (s.kategori === currentSkinFilter) || 
-            (s.tipe === currentSkinFilter)
-        );
+
+    if (currentSkinSubpage !== 'semua') {
+        filtered = allSkins.filter(s => s.jenis === currentSkinSubpage);
     }
-    if (filtered.length === 0) {
-        grid.innerHTML = '<div class="empty-state">Belum ada item</div>';
+
+    if (!filtered.length) {
+        grid.innerHTML = '<div class="empty-state"><p>Belum ada skin di kategori ini</p></div>';
         return;
     }
-    grid.innerHTML = filtered.map((skin, idx) => {
-        const displayName = skin.tag || skin.nama || 'Tanpa Nama';
-        const imgSrc = skin.gambar || skin.img || '';
-        const realIndex = allSkins.indexOf(skin);
-        return `
+
+    grid.innerHTML = filtered.map(skin => `
         <div class="card">
-            <img src="${imgSrc}" alt="${displayName}" class="card-image" loading="lazy">
+            <img src="${skin.img}" alt="${skin.nama}" class="card-img" loading="lazy">
             <div class="card-body">
-                <h3 class="card-title">${displayName}</h3>
+                <h3 class="card-title">${skin.nama}</h3>
                 <div class="card-buttons">
-                    <button class="card-btn preview" data-realidx="${realIndex}">Preview</button>
-                    <button class="card-btn download" data-realidx="${realIndex}">Unduh</button>
+                    <button class="card-btn preview" onclick="openSkinPreview('${skin.img}', '${skin.nama}', '${skin.deskripsi || ''}', '${skin.id}', '${skin.slug || ''}')">Preview</button>
+                    <a href="${skin.file}" target="_blank" class="card-btn download">Unduh</a>
                 </div>
             </div>
-        </div>`;
-    }).join('');
-
-    grid.querySelectorAll('.card-btn.preview').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const idx = parseInt(btn.getAttribute('data-realidx'));
-            openFullPreview(allSkins[idx], 'skin');
-        });
-    });
-    grid.querySelectorAll('.card-btn.download').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const idx = parseInt(btn.getAttribute('data-realidx'));
-            handleDownload(allSkins[idx]);
-        });
-    });
-
-    document.querySelectorAll('#skinFilters .filter-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('#skinFilters .filter-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            currentSkinFilter = tab.getAttribute('data-filter');
-            renderSkins();
-        });
-    });
+        </div>
+    `).join('');
 }
-// ---------- RENDER ADDON — LANDSCAPE ----------
+
+// ---------- RENDER ADDON ----------
 function renderAddons() {
-    const grid = document.getElementById('addonGrid');
-    if (!grid) return;
-    
+    const list = document.getElementById('addonGrid');
     let filtered = allAddons;
-    if (currentAddonFilter !== 'semua') {
-        filtered = allAddons.filter(a => a.kategori === currentAddonFilter);
+
+    if (currentAddonSubpage !== 'semua') {
+        filtered = allAddons.filter(a => a.kategori === currentAddonSubpage);
     }
-    if (filtered.length === 0) {
-        grid.innerHTML = '<div class="empty-state">Belum ada item</div>';
+
+    if (!filtered.length) {
+        list.innerHTML = '<div class="empty-state"><p>Belum ada addon di kategori ini</p></div>';
         return;
     }
-    grid.innerHTML = filtered.map((addon, idx) => {
-        const displayName = addon.tag || addon.nama || 'Tanpa Nama';
-        const imgSrc = addon.gambar || addon.img || '';
-        const realIndex = allAddons.indexOf(addon);
-        return `
+
+    list.innerHTML = filtered.map(addon => `
         <div class="addon-card">
-            <img src="${imgSrc}" alt="${displayName}" class="addon-card-img" loading="lazy">
-            <div class="addon-card-body">
-                <h3 class="addon-card-title">${displayName}</h3>
-                <div class="addon-card-buttons">
-                    <button class="addon-card-btn preview" data-realidx="${realIndex}">Preview</button>
-                    <a href="${addon.file || addon.download || '#'}" target="_blank" class="addon-card-btn download">Unduh</a>
+            <img src="${addon.img}" alt="${addon.nama}" class="addon-img" loading="lazy">
+            <div class="addon-body">
+                <div>
+                    <h3 class="addon-title">${addon.nama}</h3>
+                    <p class="addon-desc">${addon.deskripsi || ''}</p>
+                </div>
+                <div class="addon-buttons">
+                    <button class="addon-btn preview" onclick="openAddonPreview('${addon.img}', '${addon.nama}', '${addon.deskripsi || ''}', '${addon.id}', '${addon.slug || ''}')">Preview</button>
+                    <a href="${addon.file}" target="_blank" class="addon-btn download">Unduh</a>
                 </div>
             </div>
-        </div>`;
-    }).join('');
-
-    grid.querySelectorAll('.addon-card-btn.preview').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const idx = parseInt(btn.getAttribute('data-realidx'));
-            openFullPreview(allAddons[idx], 'addon');
-        });
-    });
-
-    document.querySelectorAll('#addonFilters .filter-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('#addonFilters .filter-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            currentAddonFilter = tab.getAttribute('data-filter');
-            renderAddons();
-        });
-    });
+        </div>
+    `).join('');
 }
 
-// ---------- RENDER GAME — BUKA DI IFRAME BUKAN TAB BARU ----------
+// ---------- RENDER GAME ----------
 function renderGames() {
     const grid = document.getElementById('gameGrid');
-    if (!grid) return;
-    
     let filtered = allGames;
-    if (currentGameFilter !== 'semua') {
-        filtered = allGames.filter(g => g.tipe === currentGameFilter);
+
+    if (currentGameSubpage !== 'semua') {
+        filtered = allGames.filter(g => g.tipe === currentGameSubpage);
     }
-    if (filtered.length === 0) {
-        grid.innerHTML = '<div class="empty-state">Belum ada item</div>';
+
+    if (!filtered.length) {
+        grid.innerHTML = '<div class="empty-state"><p>Belum ada game di kategori ini</p></div>';
         return;
     }
-    grid.innerHTML = filtered.map((game, idx) => {
-        const displayName = game.nama || game.tag || 'Tanpa Nama';
-        const realIndex = allGames.indexOf(game);
-        return `
-        <div class="game-card">
-            <h3 class="game-title">${displayName}</h3>
-            <p class="game-desc">${game.deskripsi || ''}</p>
-            <button class="game-btn" data-realidx="${realIndex}">Mainkan →</button>
-        </div>`;
-    }).join('');
 
-    grid.querySelectorAll('.game-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const idx = parseInt(btn.getAttribute('data-realidx'));
-            openFullPreview(allGames[idx], 'game');
-        });
-    });
-
-    document.querySelectorAll('#gameFilters .filter-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('#gameFilters .filter-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            currentGameFilter = tab.getAttribute('data-filter');
-            renderGames();
-        });
-    });
+    grid.innerHTML = filtered.map(game => `
+        <div class="card">
+            <div class="card-body" style="aspect-ratio: 4/3; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 20px; background: var(--secondary);">
+                <h3 class="card-title" style="font-size: 16px; margin-bottom: 8px;">${game.nama}</h3>
+                <p style="font-size: 12px; color: var(--text-light);">${game.deskripsi || ''}</p>
+            </div>
+            <div class="card-body">
+                <button class="card-btn download" style="width: 100%;" onclick="openGamePreview('${game.link}', '${game.nama}', '${game.id}', '${game.slug || ''}')">▶ Mainkan</button>
+            </div>
+        </div>
+    `).join('');
 }
 
-// ---------- RENDER INFO — DARI data.json ----------
-function renderInfo() {
-    if (!infoData || !infoData.deskripsi) {
-        console.log('Info data belum tersedia');
-        return;
-    }
-    
-    const infoDesc = document.getElementById('infoDesc');
-    if (infoDesc) infoDesc.textContent = infoData.deskripsi;
-    
+// ---------- RENDER INFO ----------
+function renderInfo(data) {
+    document.getElementById('infoDesc').textContent = data.deskripsi || '';
     const container = document.getElementById('infoContent');
-    if (!container) return;
     
     let html = '';
-    
-    if (infoData.saluran && infoData.saluran.length > 0) {
+    data.sections.forEach(sec => {
         html += `
-        <div class="accordion-item">
-            <button class="accordion-header">
-                <span>📡 Saluran</span>
-                <span class="accordion-icon">▼</span>
-            </button>
-            <div class="accordion-content">
-                <div class="accordion-inner">
-                    ${infoData.saluran.map(s => `
-                    <div class="info-item">
-                        <div class="info-name">${s.nama}</div>
-                        <a href="${s.link}" target="_blank" class="info-link">Kunjungi →</a>
-                    </div>`).join('')}
+            <div class="accordion-item">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>${sec.judul}</span>
+                    <span class="accordion-icon">▼</span>
+                </button>
+                <div class="accordion-content">
+                    <div class="accordion-inner">
+                        ${sec.item.map(item => `
+                            <div class="info-item">
+                                <span class="info-name">${item.nama}</span>
+                                <a href="${item.link}" target="_blank" class="info-link">Buka →</a>
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
             </div>
-        </div>`;
-    }
-    
-    if (infoData.grup && infoData.grup.length > 0) {
-        html += `
-        <div class="accordion-item">
-            <button class="accordion-header">
-                <span>👥 Komunitas / Grup</span>
-                <span class="accordion-icon">▼</span>
-            </button>
-            <div class="accordion-content">
-                <div class="accordion-inner">
-                    ${infoData.grup.map(g => `
-                    <div class="info-item">
-                        <div class="info-name">${g.nama}</div>
-                        <a href="${g.link}" target="_blank" class="info-link">Gabung →</a>
-                    </div>`).join('')}
-                </div>
-            </div>
-        </div>`;
-    }
-    
-    if (infoData.sosmed && infoData.sosmed.length > 0) {
-        html += `
-        <div class="accordion-item">
-            <button class="accordion-header">
-                <span>📱 Sosial Media</span>
-                <span class="accordion-icon">▼</span>
-            </button>
-            <div class="accordion-content">
-                <div class="accordion-inner">
-                    ${infoData.sosmed.map(s => `
-                    <div class="info-item">
-                        <div class="info-name">${s.nama}</div>
-                        <a href="${s.link}" target="_blank" class="info-link">Kunjungi →</a>
-                    </div>`).join('')}
-                </div>
-            </div>
-        </div>`;
-    }
-    
-    if (infoData.dukungan) {
-        html += `
-        <div class="accordion-item">
-            <button class="accordion-header">
-                <span>💜 Dukungan</span>
-                <span class="accordion-icon">▼</span>
-            </button>
-            <div class="accordion-content">
-                <div class="accordion-inner">
-                    <p class="support-desc">${infoData.dukungan.deskripsi || ''}</p>
-                    <a href="${infoData.dukungan.link}" target="_blank" class="info-link">Dukung Kami →</a>
-                </div>
-            </div>
-        </div>`;
-    }
-    
-    container.innerHTML = html;
-    
-    container.querySelectorAll('.accordion-header').forEach(btn => {
-        btn.addEventListener('click', () => {
-            btn.parentElement.classList.toggle('open');
-        });
+        `;
     });
+    container.innerHTML = html;
 }
 
-// ---------- BUKA PREVIEW PENUH — IFRAME ----------
-function openFullPreview(data, tipe) {
-    currentData = { ...data, tipe };
-    const displayName = data.tag || data.nama || 'Tanpa Nama';
-    const pageUrl = window.location.origin + window.location.pathname + '?' + (data.kategori || tipe) + '-id=' + (data.id || '');
-    
-    // Update judul & URL
-    document.getElementById('fullPreviewTitle').textContent = displayName;
-    history.pushState({}, '', pageUrl);
-    
-    // Set iframe src
-    const iframe = document.getElementById('previewIframe');
-    const downloadLink = document.getElementById('fullDownload');
-    
+function toggleAccordion(btn) {
+    const item = btn.parentElement;
+    item.classList.toggle('open');
+}
+
+// ---------- HALAMAN PREVIEW — SKIN ----------
+function openSkinPreview(img, nama, desc, id, slug) {
+    currentPreviewData = { type: 'skin', img, nama, desc, id, slug };
+    showPreviewPage('skin', img, nama, desc, id, slug);
+}
+
+// ---------- HALAMAN PREVIEW — ADDON ----------
+function openAddonPreview(img, nama, desc, id, slug) {
+    currentPreviewData = { type: 'addon', img, nama, desc, id, slug };
+    showPreviewPage('addon', img, nama, desc, id, slug);
+}
+
+// ---------- HALAMAN PREVIEW — GAME ----------
+function openGamePreview(link, nama, id, slug) {
+    currentPreviewData = { type: 'game', link, nama, id, slug };
+    showPreviewPage('game', link, nama, '', id, slug);
+}
+
+// ---------- TAMPILKAN HALAMAN PREVIEW ----------
+function showPreviewPage(tipe, media, nama, desc, id, slug) {
+    const previewPage = document.getElementById('previewPage');
+    const previewTopTitle = document.getElementById('previewPageTitle');
+    const previewMedia = document.getElementById('previewMedia');
+    const previewImg = document.getElementById('previewMainImg');
+    const previewFrame = document.getElementById('previewGameFrame');
+    const previewInfoBlock = document.getElementById('previewInfoBlock');
+    const previewName = document.getElementById('previewName');
+    const previewDescText = document.getElementById('previewDescText');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+    const shareWABtn = document.getElementById('shareWABtn');
+    const dlBtn = document.getElementById('dlBtn');
+
+    // Reset semua tampilan
+    previewMedia.style.display = 'none';
+    previewFrame.style.display = 'none';
+    previewInfoBlock.style.display = 'none';
+    dlBtn.style.display = 'none';
+
+    previewTopTitle.textContent = nama;
+
     if (tipe === 'game') {
-        iframe.src = data.link || data.url || '';
-        downloadLink.style.display = 'none';
+        previewFrame.style.display = 'block';
+        previewFrame.src = media;
+        previewInfoBlock.style.display = 'block';
+        previewName.textContent = nama;
+        previewDescText.textContent = desc || '';
     } else {
-        iframe.src = data.gambar || data.img || '';
-        downloadLink.href = data.file || data.download || '#';
-        downloadLink.style.display = 'inline-flex';
+        previewMedia.style.display = 'block';
+        previewImg.src = media;
+        previewImg.alt = nama;
+        previewInfoBlock.style.display = 'block';
+        previewName.textContent = nama;
+        previewDescText.textContent = desc || '';
     }
-    
-    // Tampilkan halaman preview
-    document.getElementById('fullPreviewPage').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    
+
+    // Buat link share
+    let shareUrl = window.location.origin;
+    if (tipe === 'skin') shareUrl += `?${slug || `cowok-id=${id}`}`;
+    else if (tipe === 'addon') shareUrl += `?${slug || `addon-id=${id}`}`;
+    else if (tipe === 'game') shareUrl += `?${slug || `game-id=${id}`}`;
+
     // Salin Link
-    document.getElementById('fullCopyLink').onclick = () => {
-        navigator.clipboard.writeText(pageUrl).then(() => showToast('Tautan disalin! ✅'));
+    copyLinkBtn.onclick = () => {
+        navigator.clipboard.writeText(shareUrl);
+        showToast('Link disalin! ✅');
     };
-    
-    // Bagikan WA
-    document.getElementById('fullShareWA').onclick = () => {
-        const text = `${displayName}%0A%0ALihat di ArpiMC Zone:%0A${encodeURIComponent(pageUrl)}`;
+
+    // Share WhatsApp
+    shareWABtn.onclick = () => {
+        const text = encodeURIComponent(`${nama}\n${shareUrl}`);
         window.open(`https://wa.me/?text=${text}`, '_blank');
     };
-}
 
-function closeFullPreview() {
-    document.getElementById('fullPreviewPage').style.display = 'none';
-    document.body.style.overflow = '';
-    history.pushState({}, '', window.location.pathname);
-    currentData = null;
-}
-
-// ---------- FUNGSI UNDUH: Skin, Couple, Skin JJ ----------
-function handleDownload(item) {
-    const kategori = item.kategori || '';
-    
-    if (kategori === 'couple') {
-        document.getElementById('coupleModal').classList.add('active');
-        document.body.style.overflow = 'hidden';
-        
-        document.getElementById('dlCowok').onclick = () => {
-            if (item.unduh_cowok) window.open(item.unduh_cowok, '_blank');
-            closeCoupleModal();
-            showToast('Mulai mengunduh Cowok...');
-        };
-        document.getElementById('dlCewek').onclick = () => {
-            if (item.unduh_cewek) window.open(item.unduh_cewek, '_blank');
-            closeCoupleModal();
-            showToast('Mulai mengunduh Cewek...');
-        };
-        return;
+    // Unduh
+    if (currentPreviewData && currentPreviewData.file) {
+        dlBtn.href = currentPreviewData.file;
+        dlBtn.style.display = 'flex';
     }
-    
-    if (kategori === 'jj') {
-        document.getElementById('jjModal').classList.add('active');
-        document.body.style.overflow = 'hidden';
-        
-        document.getElementById('dlJJSkin').onclick = () => {
-            if (item.file_skin || item.skin) window.open(item.file_skin || item.skin, '_blank');
-            closeJJModal();
-            showToast('Mengunduh Skin...');
-        };
-        document.getElementById('dlJJImg').onclick = () => {
-            if (item.gambar) window.open(item.gambar, '_blank');
-            closeJJModal();
-            showToast('Mengunduh Gambar...');
-        };
-        document.getElementById('dlJJAll').onclick = () => {
-            if (item.zip_semua || item.zip) window.open(item.zip_semua || item.zip, '_blank');
-            closeJJModal();
-            showToast('Mengunduh Semua...');
-        };
-        return;
+
+    previewPage.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    history.pushState({ preview: true }, '', shareUrl);
+}
+
+// ---------- TUTUP PREVIEW ----------
+function closePreviewPage() {
+    document.getElementById('previewPage').style.display = 'none';
+    document.body.style.overflow = '';
+    currentPreviewData = null;
+    history.back();
+}
+
+// Tutup preview saat tombol back browser
+window.addEventListener('popstate', () => {
+    if (document.getElementById('previewPage').style.display === 'flex') {
+        document.getElementById('previewPage').style.display = 'none';
+        document.body.style.overflow = '';
+        currentPreviewData = null;
     }
-    
-    const link = item.file || item.download || item.link || '#';
-    window.open(link, '_blank');
-    showToast('Mulai mengunduh...');
-}
+});
 
-function closeCoupleModal() {
-    document.getElementById('coupleModal').classList.remove('active');
-    document.body.style.overflow = '';
-}
-
-function closeJJModal() {
-    document.getElementById('jjModal').classList.remove('active');
-    document.body.style.overflow = '';
-}
-
-// ---------- BUKA LANGSUNG DARI URL ----------
+// ---------- BUKA LANGSUNG DARI URL SLUG ----------
 function handleUrlSlug() {
     const params = new URLSearchParams(window.location.search);
-    if (params.size === 0) return;
     
-    const query = window.location.search.slice(1);
-    const match = query.match(/^([\w]+)-id=(\d+)$/);
-    if (!match) return;
-    
-    const targetKategori = match[1];
-    const targetId = parseInt(match[2]);
-    
-    const checkData = setInterval(() => {
-        let foundItem = null;
-        let foundType = 'skin';
-        
-        foundItem = allSkins.find(s => 
-            String(s.kategori) === targetKategori && s.id === targetId
-        );
-        
-        if (!foundItem) {
-            foundItem = allAddons.find(a => 
-                String(a.kategori) === targetKategori && a.id === targetId
-            );
-            foundType = 'addon';
-        }
-        
-        if (!foundItem) {
-            foundItem = allGames.find(g => 
-                String(g.kategori) === targetKategori && g.id === targetId
-            );
-            foundType = 'game';
-        }
-        
-        if (foundItem) {
-            clearInterval(checkData);
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            if (foundType === 'skin') {
-                document.querySelector('[data-page="skinPage"]').classList.add('active');
-                document.getElementById('skinPage').classList.add('active');
-            } else if (foundType === 'addon') {
-                document.querySelector('[data-page="addonPage"]').classList.add('active');
-                document.getElementById('addonPage').classList.add('active');
-            } else if (foundType === 'game') {
-                document.querySelector('[data-page="gamePage"]').classList.add('active');
-                document.getElementById('gamePage').classList.add('active');
+    for (const [key, value] of params.entries()) {
+        // Format: ?cowok-id=1
+        const match = key.match(/^(.+)-id$/);
+        if (match) {
+            const jenis = match[1];
+            const id = parseInt(value);
+            
+            // Cari di Skin
+            const skin = allSkins.find(s => String(s.id) === String(id));
+            if (skin) {
+                setTimeout(() => {
+                    openSkinPreview(skin.img, skin.nama, skin.deskripsi || '', skin.id, `${jenis}-id=${id}`);
+                }, 300);
+                return;
             }
-            setTimeout(() => openFullPreview(foundItem, foundType), 100);
+            
+            // Cari di Addon
+            const addon = allAddons.find(a => String(a.id) === String(id));
+            if (addon) {
+                setTimeout(() => {
+                    openAddonPreview(addon.img, addon.nama, addon.deskripsi || '', addon.id, `${jenis}-id=${id}`);
+                }, 300);
+                return;
+            }
+            
+            // Cari di Game
+            const game = allGames.find(g => String(g.id) === String(id));
+            if (game) {
+                setTimeout(() => {
+                    openGamePreview(game.link, game.nama, game.id, `${jenis}-id=${id}`);
+                }, 300);
+                return;
+            }
         }
-    }, 100);
-    
-    setTimeout(() => clearInterval(checkData), 10000);
+    }
+}
+
+// ---------- MODAL PILIHAN UNDUH SKIN COUPLE ----------
+function closeCoupleModal() {
+    document.getElementById('coupleModal').style.display = 'none';
+}
+function closeJJModal() {
+    document.getElementById('jjModal').style.display = 'none';
+}
+
+// ---------- KE BERANDA ----------
+function goHome() {
+    document.querySelector('.nav-link[data-page="skinPage"]').click();
 }
 
 // ---------- NOTIFIKASI TOAST ----------
-function showToast(pesan) {
-    const toast = document.getElementById('toast');
-    if (!toast) return;
-    toast.textContent = pesan;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2500);
+function showToast(msg) {
+    const box = document.getElementById('toastBox');
+    box.textContent = msg;
+    box.classList.add('show');
+    setTimeout(() => box.classList.remove('show'), 2500);
 }
 
-// ---------- TOMBOL KEMBALI BROWSER ----------
-window.addEventListener('popstate', () => {
-    closeFullPreview();
-});
+// ==========================================
+// ########## AKHIR FILE ##########
+// ==========================================
