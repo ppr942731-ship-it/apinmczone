@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "nama": "Tic-Tac-Toe",
+    "deskripsi": "Bermain silang-silang bersama teman",
+    "link": "https://tic-tac-toe-arpi.vercel.app/",
+    "tipe": "games",
+    "tanggal_upload": "25 Okt 2026"
+  },
+  {
+    "id": 2,
+    "nama": "Minecraft Quiz Mob",
+    "deskripsi": "Tebak seberapa tahu kamu tentang mob Minecraft",
+    "link": "https://arpihost2.lovable.app/kuis-mc-mob/",
+    "tipe": "games",
+    "tanggal_upload": "26 Okt 2026"
+  },
+  {
+    "id": 3,
+    "nama": "Minecraft Quiz Item",
+    "deskripsi": "Tebak seberapa tahu kamu tentang item Minecraft",
+    "link": "https://arpihost2.lovable.app/kuis-mc-item/",
+    "tipe": "games",
+    "tanggal_upload": "26 Okt 2026"
+  }
+]
