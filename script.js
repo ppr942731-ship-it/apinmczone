@@ -1,5 +1,5 @@
 // ==========================================
-// ARPIMC ZONE — SCRIPT.JS
+// ARPIMC ZONE — SCRIPT.JS BAGIAN 1
 // ==========================================
 
 let allSkins = [];
@@ -240,7 +240,6 @@ function renderGames() {
     }
     grid.innerHTML = filtered.map((game, idx) => {
         const displayName = game.nama || game.tag || 'Tanpa Nama';
-        const realIndex = allGames.indexOf(game);
         return `
         <div class="game-card">
             <h3 class="game-title">${displayName}</h3>
@@ -342,6 +341,13 @@ function renderInfo() {
     });
 }
 
+// ==========================================
+// ====  SAMPAI DI SINI BAGIAN 1  ====
+// ==========================================
+// ==========================================
+// ARPIMC ZONE — SCRIPT.JS BAGIAN 2
+// ==========================================
+
 // ---------- BUKA PREVIEW MODAL ----------
 function openPreviewModal(data, tipe = 'skin') {
     currentData = { ...data, tipe };
@@ -391,10 +397,8 @@ function openPreviewModal(data, tipe = 'skin') {
     } else {
         topDownload.style.display = 'none';
         downloadArea.style.display = 'block';
-        document.getElementById('modalMainDownload').onclick = () => handleDownload(data);
     }
 
-    document
     document.getElementById('previewModal').classList.add('active');
     document.body.style.overflow = 'hidden';
 }
