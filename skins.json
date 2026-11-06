@@ -1,17 +1,7 @@
 [
   {
     "id": 1,
-    "slug": "skin-cowok-cr-keyy-1",
-    "nama": "SKIN COWOK | CR KEYY",
-    "kategori": "cowok",
-    "gambar": "https://files.catbox.moe/t67bak.jpg",
-    "link_download": "https://www.mediafire.com/file/aym95o7ggnq4ux8/1001479345.png/file",
-    "deskripsi": "Credit by KEYY",
-    "tanggal_upload": "27 Okt 2026"
-  },
-  {
-    "id": 2,
-    "slug": "skin-cowok-cr-refin-2",
+    "slug": "skin-cowok-cr-refin-1",
     "tag": "SKIN COWOK | CR REFIN",
     "kategori": "cowok",
     "gambar": "https://files.catbox.moe/t7z8wa.jpg",
@@ -20,8 +10,8 @@
     "tanggal_upload": "27 Okt 2026"
   },
   {
-    "id": 3,
-    "slug": "skin-cowok-cr-aiko-3",
+    "id": 2,
+    "slug": "skin-cowok-cr-aiko-2",
     "tag": "SKIN COWOK | CR AIKO",
     "kategori": "cowok",
     "gambar": "https://files.catbox.moe/35f063.jpg",
@@ -30,8 +20,8 @@
     "tanggal_upload": "27 Okt 2026"
   },
   {
-    "id": 4,
-    "slug": "skin-cowok-cr-fiin-4",
+    "id": 3,
+    "slug": "skin-cowok-cr-fiin-3",
     "tag": "SKIN COWOK | CR FIIN",
     "kategori": "cowok",
     "gambar": "https://files.catbox.moe/w2x9fk.jpg",
@@ -40,8 +30,8 @@
     "tanggal_upload": "27 Okt 2026"
   },
   {
-    "id": 5,
-    "slug": "skin-cewek-cr-sall-5",
+    "id": 4,
+    "slug": "skin-cewek-cr-sall-4",
     "tag": "SKIN CEWEK | CR SALL",
     "kategori": "cewek",
     "gambar": "https://files.catbox.moe/y8r5gp.jpg",
@@ -50,8 +40,8 @@
     "tanggal_upload": "27 Okt 2026"
   },
   {
-    "id": 6,
-    "slug": "skin-pvp-cr-arpi-6",
+    "id": 5,
+    "slug": "skin-pvp-cr-arpi-5",
     "tag": "SKIN PVP | CR ARPI",
     "kategori": "pvp",
     "gambar": "https://files.catbox.moe/pdm86w.jpg",
@@ -60,8 +50,8 @@
     "tanggal_upload": "27 Okt 2026"
   },
   {
-    "id": 7,
-    "slug": "skin-cowok-cr-kalskin-7",
+    "id": 6,
+    "slug": "skin-cowok-cr-kalskin-6",
     "tag": "SKIN COWOK | CR KALSKIN",
     "kategori": "cowok",
     "gambar": "https://files.catbox.moe/ctck66.jpg",
@@ -70,8 +60,8 @@
     "tanggal_upload": "27 Okt 2026"
   },
   {
-    "id": 8,
-    "slug": "skin-cowok-cr-unknown-8",
+    "id": 7,
+    "slug": "skin-cowok-cr-unknown-7",
     "tag": "SKIN COWOK | CR UNKNOWN",
     "kategori": "cowok",
     "gambar": "https://files.catbox.moe/1aptuo.jpg",
@@ -80,8 +70,8 @@
     "tanggal_upload": "27 Okt 2026"
   },
   {
-    "id": 9,
-    "slug": "skin-cowok-cr-kyzen-9",
+    "id": 8,
+    "slug": "skin-cowok-cr-kyzen-8",
     "tag": "SKIN COWOK | CR KYZEN",
     "kategori": "cowok",
     "gambar": "https://files.catbox.moe/gvtbb0.jpg",
@@ -90,8 +80,8 @@
     "tanggal_upload": "27 Okt 2026"
   },
   {
-    "id": 10,
-    "slug": "skin-cowok-cr-gojo-10",
+    "id": 9,
+    "slug": "skin-cowok-cr-gojo-9",
     "tag": "SKIN COWOK | CR GOJO",
     "kategori": "cowok",
     "gambar": "https://files.catbox.moe/t6e5as.jpg",
@@ -100,8 +90,8 @@
     "tanggal_upload": "27 Okt 2026"
   },
   {
-    "id": 11,
-    "slug": "skin-cowok-cr-unknown-11",
+    "id": 10,
+    "slug": "skin-cowok-cr-unknown-10",
     "tag": "SKIN COWOK | CR UNKNOWN",
     "kategori": "cowok",
     "gambar": "https://files.catbox.moe/6x14it.jpg",
@@ -110,8 +100,8 @@
     "tanggal_upload": "27 Okt 2026"
   },
   {
-    "id": 12,
-    "slug": "template-skin-cr-unknown-12",
+    "id": 11,
+    "slug": "template-skin-cr-unknown-11",
     "tag": "TEMPLATE SKIN | CR UNKNOWN",
     "kategori": "template",
     "gambar": "https://files.catbox.moe/z30h6v.jpg",
@@ -120,8 +110,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 13,
-    "slug": "skin-cowok-cr-aiko-13",
+    "id": 12,
+    "slug": "skin-cowok-cr-aiko-12",
     "tag": "SKIN COWOK | CR AIKO",
     "kategori": "cowok",
     "gambar": "https://files.catbox.moe/xcehlc.jpg",
@@ -130,8 +120,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 14,
-    "slug": "skin-cewek-cr-unknown-14",
+    "id": 13,
+    "slug": "skin-cewek-cr-unknown-13",
     "tag": "SKIN CEWEK | CR UNKNOWN",
     "kategori": "cewek",
     "gambar": "https://files.catbox.moe/js5bfk.jpg",
@@ -140,8 +130,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 15,
-    "slug": "skin-cewek-cr-zdli-15",
+    "id": 14,
+    "slug": "skin-cewek-cr-zdli-14",
     "tag": "SKIN CEWEK | CR ZDLI",
     "kategori": "cewek",
     "gambar": "https://files.catbox.moe/j1qkuj.jpg",
@@ -150,8 +140,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 16,
-    "slug": "skin-cewek-cr-rapi-16",
+    "id": 15,
+    "slug": "skin-cewek-cr-rapi-15",
     "tag": "SKIN CEWEK | CR RAPI",
     "kategori": "cewek",
     "gambar": "https://files.catbox.moe/n8l15l.jpg",
@@ -160,8 +150,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 17,
-    "slug": "skin-cewek-cr-unknown-17",
+    "id": 16,
+    "slug": "skin-cewek-cr-unknown-16",
     "tag": "SKIN CEWEK | CR UNKNOWN",
     "kategori": "cewek",
     "gambar": "https://files.catbox.moe/f5471t.jpeg",
@@ -170,8 +160,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 18,
-    "slug": "skin-cewek-cr-unknown-18",
+    "id": 17,
+    "slug": "skin-cewek-cr-unknown-17",
     "tag": "SKIN CEWEK | CR UNKNOWN",
     "kategori": "cewek",
     "gambar": "https://files.catbox.moe/o7g0r7.jpg",
@@ -180,8 +170,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 19,
-    "slug": "skin-cewek-cr-unknown-19",
+    "id": 18,
+    "slug": "skin-cewek-cr-unknown-18",
     "tag": "SKIN CEWEK | CR UNKNOWN",
     "kategori": "cewek",
     "gambar": "https://files.catbox.moe/g7kou2.jpg",
@@ -190,8 +180,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 20,
-    "slug": "skin-cewek-cr-aiko-20",
+    "id": 19,
+    "slug": "skin-cewek-cr-aiko-19",
     "tag": "SKIN CEWEK | CR AIKO",
     "kategori": "cewek",
     "gambar": "https://files.catbox.moe/yzwdgf.jpg",
@@ -200,8 +190,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 21,
-    "slug": "skin-cewek-cr-eden-21",
+    "id": 20,
+    "slug": "skin-cewek-cr-eden-20",
     "tag": "SKIN CEWEK | CR EDEN",
     "kategori": "cewek",
     "gambar": "https://files.catbox.moe/hj1d32.jpg",
@@ -210,8 +200,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 22,
-    "slug": "skin-cewek-cr-aiko-22",
+    "id": 21,
+    "slug": "skin-cewek-cr-aiko-21",
     "tag": "SKIN CEWEK | CR AIKO",
     "kategori": "cewek",
     "gambar": "https://files.catbox.moe/338n6y.jpg",
@@ -220,8 +210,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 23,
-    "slug": "template-indomaret-cr-unknown-23",
+    "id": 22,
+    "slug": "template-indomaret-cr-unknown-22",
     "tag": "TEMPLATE INDOMARET | CR UNKNOWN",
     "kategori": "template",
     "gambar": "https://files.catbox.moe/rokhj8.jpg",
@@ -230,8 +220,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 24,
-    "slug": "template-baju-jawa-cr-edenn-24",
+    "id": 23,
+    "slug": "template-baju-jawa-cr-edenn-23",
     "tag": "TEMPLATE BAJU JAWA | CR EDENN",
     "kategori": "template",
     "gambar": "https://files.catbox.moe/2wiede.jpg",
@@ -240,8 +230,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 25,
-    "slug": "template-skin-cr-edenn-25",
+    "id": 24,
+    "slug": "template-skin-cr-edenn-24",
     "tag": "TEMPLATE SKIN | CR EDENN",
     "kategori": "template",
     "gambar": "https://files.catbox.moe/1qgwf2.jpg",
@@ -250,8 +240,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 26,
-    "slug": "template-baju-adat-jawa-cr-edenn-26",
+    "id": 25,
+    "slug": "template-baju-adat-jawa-cr-edenn-25",
     "tag": "TEMPLATE BAJU ADAT JAWA | CR EDENN",
     "kategori": "template",
     "gambar": "https://files.catbox.moe/2jmldt.jpg",
@@ -260,8 +250,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 27,
-    "slug": "template-naruto-cr-pau-pau-27",
+    "id": 26,
+    "slug": "template-naruto-cr-pau-pau-26",
     "tag": "TEMPLATE NARUTO | CR PAU PAU",
     "kategori": "template",
     "gambar": "https://files.catbox.moe/0cxe92.jpg",
@@ -270,8 +260,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 28,
-    "slug": "template-skin-cr-depay-28",
+    "id": 27,
+    "slug": "template-skin-cr-depay-27",
     "tag": "TEMPLATE SKIN | CR DEPAY",
     "kategori": "template",
     "gambar": "https://files.catbox.moe/wf79r4.jpg",
@@ -280,8 +270,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 29,
-    "slug": "template-skin-cr-alle-29",
+    "id": 28,
+    "slug": "template-skin-cr-alle-28",
     "tag": "TEMPLATE SKIN | CR ALLE",
     "kategori": "template",
     "gambar": "https://files.catbox.moe/2vp941.jpg",
@@ -290,8 +280,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 30,
-    "slug": "template-gojo-cr-unknown-30",
+    "id": 29,
+    "slug": "template-gojo-cr-unknown-29",
     "tag": "TEMPLATE GOJO | CR UNKNOWN",
     "kategori": "template",
     "gambar": "https://files.catbox.moe/ty6ck6.jpg",
@@ -300,8 +290,8 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 31,
-    "slug": "template-sukuna-cr-unknown-31",
+    "id": 30,
+    "slug": "template-sukuna-cr-unknown-30",
     "tag": "TEMPLATE SUKUNA | CR UNKNOWN",
     "kategori": "template",
     "gambar": "https://files.catbox.moe/l2kxy8.jpg",
@@ -310,13 +300,23 @@
     "tanggal_upload": "25 Okt 2026"
   },
   {
-    "id": 32,
-    "slug": "mega-pack-black-x-gold-32",
+    "id": 31,
+    "slug": "mega-pack-black-x-gold-31",
     "tag": "MEGA PACK | BLACK X GOLD",
     "kategori": "pack",
     "gambar": "https://files.catbox.moe/kww3hb.jpg",
     "link_download": "https://www.mediafire.com/file/n97n4a5rsnx81rg/Black+X+Gold+MEGAPACK+(skin_pack).mcpack/file",
     "deskripsi": "Credit by UNKNOWN",
     "tanggal_upload": "25 Okt 2026"
+  },
+  {
+    "id": 32,
+    "slug": "skin-cowok-cr-keyy-33",
+    "nama": "SKIN COWOK | CR KEYY",
+    "kategori": "cowok",
+    "gambar": "https://files.catbox.moe/t67bak.jpg",
+    "link_download": "https://www.mediafire.com/file/aym95o7ggnq4ux8/1001479345.png/file",
+    "deskripsi": "Credit by KEYY",
+    "tanggal_upload": "27 Okt 2026"
   }
-]
+    ]
